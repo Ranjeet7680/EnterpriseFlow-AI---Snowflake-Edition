@@ -1,0 +1,300 @@
+/* Custom CSS for EnterpriseFlow AI Dashboard */
+
+:root {
+    --color-primary: #70ffe0;
+    --color-primary-dim: #00dfbe;
+    --color-secondary: #adc6ff;
+    --color-secondary-dim: #026de7;
+    --color-background: #101415;
+    --color-surface: #101415;
+    --color-surface-container: #1d2022;
+    --color-surface-container-high: #272a2c;
+    --color-on-background: #e0e3e5;
+    --color-error: #ffb4ab;
+}
+
+/* Base resets & custom typography scrollbars */
+html, body {
+    background-color: var(--color-background);
+    color: var(--color-on-background);
+    font-family: 'Inter', sans-serif;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+    opacity: 0.5;
+}
+
+/* Glassmorphism panels */
+.glass-panel {
+    background: rgba(16, 20, 21, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.glass-panel-heavy {
+    background: rgba(10, 14, 15, 0.85);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Canvas Grid Pattern */
+.canvas-grid {
+    background-image: radial-gradient(rgba(112, 255, 224, 0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+/* Connection Lines animation */
+.workflow-line {
+    stroke-dasharray: 6;
+    animation: dash 15s linear infinite;
+}
+@keyframes dash {
+    to {
+        stroke-dashoffset: -120;
+    }
+}
+
+/* Glow effects & animations */
+.glow-pulse {
+    animation: glow 2s ease-in-out infinite alternate;
+}
+@keyframes glow {
+    from {
+        box-shadow: 0 0 5px rgba(0, 229, 195, 0.15);
+        border-color: rgba(0, 229, 195, 0.3);
+    }
+    to {
+        box-shadow: 0 0 15px rgba(0, 229, 195, 0.45);
+        border-color: rgba(0, 229, 195, 0.8);
+    }
+}
+
+.glow-hover:hover {
+    box-shadow: 0 0 15px rgba(0, 229, 195, 0.15);
+    border-color: rgba(0, 229, 195, 0.4);
+}
+
+.orb-glow {
+    filter: blur(60px);
+    background: linear-gradient(135deg, #7C4DFF 0%, #00E5C3 100%);
+    animation: pulse 6s infinite alternate;
+}
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.4; }
+    100% { transform: scale(1.2); opacity: 0.7; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; filter: blur(8px); }
+    to { opacity: 1; filter: blur(0px); }
+}
+.fade-in-sequence {
+    animation: fadeIn 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.progress-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(112, 255, 224, 0.3), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Sidebar connection points on the node editor */
+.connection-handle {
+    width: 10px;
+    height: 10px;
+    background-color: var(--color-background);
+    border: 2px solid var(--color-primary);
+    border-radius: 9999px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.connection-handle:hover {
+    background-color: var(--color-primary);
+    box-shadow: 0 0 8px var(--color-primary);
+}
+.connection-handle-left {
+    left: -5px;
+}
+.connection-handle-right {
+    right: -5px;
+}
+
+/* Draggable helper states */
+.canvas-node {
+    cursor: move;
+    user-select: none;
+    position: absolute !important;
+}
+.canvas-node-active {
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 15px rgba(0, 229, 195, 0.2) !important;
+}
+
+/* Voice AI wave animation styles */
+.voice-wave-bar {
+    width: 3px;
+    background-color: var(--color-primary);
+    border-radius: 99px;
+    height: 4px;
+    transition: height 0.05s ease;
+}
+
+/* Utility to hide elements */
+.hidden-view {
+    display: none !important;
+}
+
+/* Transitions for tabs */
+.view-container {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Custom simulation active states */
+.node-active-flash {
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 25px var(--color-primary) !important;
+    transform: scale(1.05);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.workflow-line-active {
+    stroke: var(--color-primary) !important;
+    stroke-width: 3.5px !important;
+    filter: drop-shadow(0 0 8px var(--color-primary));
+    stroke-dasharray: 6;
+    animation: dash 4s linear infinite !important;
+    transition: all 0.3s;
+}
+
+.slack-toast {
+    animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(110%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Collapsible Sidebar Styles */
+aside {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+main, footer {
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.sidebar-collapsed {
+    width: 72px !important;
+}
+.sidebar-collapsed .logo-text,
+.sidebar-collapsed .logo-subtitle,
+.sidebar-collapsed .nav-text,
+.sidebar-collapsed .doc-footer,
+.sidebar-collapsed .new-workflow-btn-text {
+    display: none !important;
+}
+.sidebar-collapsed nav a {
+    justify-content: center;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+.sidebar-collapsed .new-workflow-btn {
+    padding: 10px 0 !important;
+    border-radius: 12px;
+}
+.sidebar-collapsed .px-6 {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    justify-content: center;
+}
+
+.content-collapsed-margin {
+    margin-left: 72px !important;
+}
+.footer-collapsed-left {
+    left: 72px !important;
+}
+
+/* Accordion side navigation group collapse/expand transitions */
+.group-collapsed {
+    max-height: 0px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+.group-arrow-collapsed {
+    transform: rotate(-90deg) !important;
+}
+
+/* Collapsible sidebar overrides for group headers */
+.sidebar-collapsed .group-arrow,
+.sidebar-collapsed .nav-group-container button {
+    display: none !important;
+}
+.sidebar-collapsed .nav-group-container div {
+    padding-left: 0 !important;
+    max-height: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+.sidebar-collapsed .nav-group-container div a {
+    justify-content: center;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Command Palette Overlay */
+#commandPaletteModal {
+    background-color: rgba(10, 14, 15, 0.7);
+    backdrop-filter: blur(12px);
+    transition: opacity 0.3s ease;
+}
+
+/* Onboarding Wizard loader states */
+.progress-bar-shimmer {
+    background: linear-gradient(90deg, #70ffe0 0%, #00dfbe 50%, #70ffe0 100%);
+    background-size: 200% 100%;
+    animation: barShimmer 1.5s infinite linear;
+}
+@keyframes barShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Node flow flashes and statuses */
+.node-active-flash-error {
+    border-color: var(--color-error) !important;
+    box-shadow: 0 0 25px var(--color-error) !important;
+    transform: scale(1.05);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Custom telemetry indicator glow */
+.kpi-metric-glow {
+    box-shadow: 0 0 15px rgba(112, 255, 224, 0.05);
+    border: 1px solid rgba(112, 255, 224, 0.1);
+}
+.kpi-metric-glow:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 20px rgba(112, 255, 224, 0.15);
+}
+
