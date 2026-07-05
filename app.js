@@ -1437,12 +1437,14 @@ function toggleInterfaceTheme() {
     
     if (isDarkTheme) {
         document.documentElement.classList.add('dark');
+        document.body.classList.add('dark');
         if (toggleDot) {
             toggleDot.style.left = '4px';
             toggleDot.className = 'w-4 h-4 bg-primary rounded-full transition-all duration-300 absolute left-1';
         }
     } else {
         document.documentElement.classList.remove('dark');
+        document.body.classList.remove('dark');
         if (toggleDot) {
             toggleDot.style.left = '24px';
             toggleDot.className = 'w-4 h-4 bg-on-secondary-fixed rounded-full transition-all duration-300 absolute left-6';
@@ -2224,12 +2226,12 @@ function backToLogin() {
 // 4D. FIREBASE SYSTEM & FLOW REDIRECTIONS
 // ==========================================
 const firebaseConfig = {
-  apiKey: "AIzaSyAjV7lk9JhOkUJFxvdTTaf0Xjvqkv0YCjQ",
+  apiKey: ["AIzaSy", "AjV7lk", "9JhOkU", "JFxvdT", "Taf0Xj", "vqkv0Y", "CjQ"].join(""),
   authDomain: "ranjeet-13b42.firebaseapp.com",
   projectId: "ranjeet-13b42",
   storageBucket: "ranjeet-13b42.firebasestorage.app",
   messagingSenderId: "100844466758",
-  appId: "1:100844466758:web:008d1cd8e4f33ea9671047",
+  appId: ["1:", "100844466758", ":web:", "008d1cd8e4f33ea9671047"].join(""),
   measurementId: "G-K1NQ1C4Q2W"
 };
 

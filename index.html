@@ -20,23 +20,23 @@
             theme: {
                 extend: {
                     colors: {
-                        "on-background": "#e0e3e5",
+                        "on-background": "var(--color-on-background)",
                         "on-secondary": "#002e69",
-                        "error": "#ffb4ab",
+                        "error": "var(--color-error)",
                         "tertiary-container": "#d2c3ff",
                         "surface-bright": "#363a3b",
                         "tertiary-fixed-dim": "#cdbdff",
-                        "surface": "#101415",
-                        "surface-container-high": "#272a2c",
+                        "surface": "var(--color-surface)",
+                        "surface-container-high": "var(--color-surface-container-high)",
                         "inverse-primary": "#006b5a",
                         "primary-container": "#00e5c3",
                         "surface-container-highest": "#323537",
-                        "surface-container": "#1d2022",
+                        "surface-container": "var(--color-surface-container)",
                         "primary-fixed-dim": "#00dfbe",
-                        "on-surface": "#e0e3e5",
+                        "on-surface": "var(--color-on-background)",
                         "inverse-on-surface": "#2d3133",
-                        "inverse-surface": "#e0e3e5",
-                        "on-surface-variant": "#b9cac4",
+                        "inverse-surface": "var(--color-on-background)",
+                        "on-surface-variant": "var(--color-on-background)",
                         "on-tertiary": "#370096",
                         "on-secondary-fixed": "#001a41",
                         "surface-container-low": "#191c1e",
@@ -44,7 +44,7 @@
                         "on-error-container": "#ffdad6",
                         "on-primary-fixed-variant": "#005143",
                         "outline": "#84948f",
-                        "primary": "#70ffe0",
+                        "primary": "var(--color-primary)",
                         "surface-container-lowest": "#0b0f10",
                         "secondary-fixed": "#d8e2ff",
                         "on-secondary-fixed-variant": "#004494",
@@ -61,10 +61,10 @@
                         "on-tertiary-fixed": "#20005f",
                         "surface-tint": "#00dfbe",
                         "on-primary": "#00382e",
-                        "surface-dim": "#101415",
-                        "secondary": "#adc6ff",
+                        "surface-dim": "var(--color-surface)",
+                        "secondary": "var(--color-secondary)",
                         "error-container": "#93000a",
-                        "background": "#101415",
+                        "background": "var(--color-background)",
                         "primary-fixed": "#42fdda",
                         "on-primary-fixed": "#00201a"
                     },
@@ -87,7 +87,7 @@
         }
     </script>
 </head>
-<body class="bg-background text-on-background font-body-base overflow-hidden h-screen w-screen relative">
+<body class="dark bg-background text-on-background font-body-base overflow-hidden h-screen w-screen relative">
 
     <!-- ========================================== -->
     <!-- 1. SPLASH SCREEN LAYER -->
