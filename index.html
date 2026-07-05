@@ -4,6 +4,7 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>EnterpriseFlow AI | Intelligent Data Workflows</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2370ffe0'%3E%3Cpolygon points='12,2 22,8.5 22,17.5 12,22 2,17.5 2,8.5' stroke='%2370ffe0' stroke-width='2' fill='none'/%3E%3Ccircle cx='12' cy='12' r='3.5' fill='%2370ffe0'/%3E%3C/svg%3E" />
     <!-- Tailwind CSS with Forms and Container Queries Plugins -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <!-- Google Fonts & Material Symbols -->
@@ -486,6 +487,15 @@
                         <span class="material-symbols-outlined text-on-surface-variant text-[18px] ml-3">key</span>
                         <input type="password" id="loginApiKey" value="••••••••••••••••" class="w-full bg-transparent border-0 px-3 py-2.5 text-white placeholder-on-surface-variant focus:outline-none focus:ring-0" placeholder="Enter security token..." />
                     </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] uppercase font-bold tracking-wider text-on-surface-variant mb-1.5">Referral Code (Optional)</label>
+                    <div class="relative flex items-center bg-white/5 border border-white/10 rounded-xl focus-within:border-primary/50 transition-all">
+                        <span class="material-symbols-outlined text-on-surface-variant text-[18px] ml-3">group_add</span>
+                        <input type="text" id="loginReferralCode" class="w-full bg-transparent border-0 px-3 py-2.5 text-white placeholder-on-surface-variant focus:outline-none focus:ring-0 uppercase" placeholder="e.g. EF-RANJEET-A7X9K2" oninput="validateReferralInputRealTime()" />
+                    </div>
+                    <div id="referralValidationMsg" class="text-[9px] mt-1.5 hidden font-semibold"></div>
                 </div>
             </div>
 
@@ -1117,6 +1127,14 @@
                 <a href="#" data-view="audit-governance" class="flex items-center gap-3 px-3 py-2 text-xs text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all rounded-xl" onclick="switchTab('audit-governance')">
                     <span class="material-symbols-outlined text-[16px]">gavel</span>
                     <span class="nav-text">Audit & Governance</span>
+                </a>
+                <a href="#" data-view="referral-program" class="flex items-center gap-3 px-3 py-2 text-xs text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all rounded-xl" onclick="switchTab('referral-program')">
+                    <span class="material-symbols-outlined text-[16px]">group_add</span>
+                    <span class="nav-text">Referral Program</span>
+                </a>
+                <a id="navAdminReferrals" href="#" data-view="admin-referrals" class="flex items-center gap-3 px-3 py-2 text-xs text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all rounded-xl" onclick="switchTab('admin-referrals')">
+                    <span class="material-symbols-outlined text-[16px]">shield_person</span>
+                    <span class="nav-text">Admin Referrals</span>
                 </a>
                 <a href="#" data-view="settings" class="flex items-center gap-3 px-3 py-2 text-xs text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all rounded-xl" onclick="switchTab('settings')">
                     <span class="material-symbols-outlined text-[16px]">settings</span>
@@ -2055,6 +2073,516 @@
                                 <div class="w-4 h-4 bg-primary rounded-full transition-all duration-300 absolute left-1"></div>
                             </button>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3G. REFERRAL PROGRAM TAB VIEW -->
+            <section id="view-referral-program" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[24px]">redeem</span>
+                            Referral Program
+                        </h1>
+                        <p class="text-xs text-on-surface-variant mt-1">Invite teams to EnterpriseFlow AI and unlock platform rewards.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5" onclick="triggerReferralOnboardingDemo()">
+                            <span class="material-symbols-outlined text-[16px]">play_circle</span>
+                            Run Tutorial Simulation
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TOP STATS CARDS -->
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <!-- Total Referrals -->
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between relative overflow-hidden group">
+                        <div class="absolute -right-4 -top-4 w-12 h-12 bg-primary/5 rounded-full pointer-events-none group-hover:scale-125 transition-transform duration-500"></div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant">Total Referrals</span>
+                            <span class="material-symbols-outlined text-primary text-[18px]">group</span>
+                        </div>
+                        <div class="mt-4">
+                            <h2 id="refStat-total" class="text-2xl font-extrabold text-white leading-none">12</h2>
+                            <p class="text-[9px] text-primary font-semibold mt-1">All time invites</p>
+                        </div>
+                    </div>
+
+                    <!-- Successful Signups -->
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between relative overflow-hidden group">
+                        <div class="absolute -right-4 -top-4 w-12 h-12 bg-secondary/5 rounded-full pointer-events-none group-hover:scale-125 transition-transform duration-500"></div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant">Successful Signups</span>
+                            <span class="material-symbols-outlined text-secondary text-[18px]">check_circle</span>
+                        </div>
+                        <div class="mt-4">
+                            <h2 id="refStat-signups" class="text-2xl font-extrabold text-white leading-none">8</h2>
+                            <p class="text-[9px] text-secondary font-semibold mt-1">+2 this week</p>
+                        </div>
+                    </div>
+
+                    <!-- Pending Invites -->
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between relative overflow-hidden group">
+                        <div class="absolute -right-4 -top-4 w-12 h-12 bg-white/5 rounded-full pointer-events-none group-hover:scale-125 transition-transform duration-500"></div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant">Pending Invites</span>
+                            <span class="material-symbols-outlined text-on-surface-variant text-[18px]">hourglass_empty</span>
+                        </div>
+                        <div class="mt-4">
+                            <h2 id="refStat-pending" class="text-2xl font-extrabold text-white leading-none">3</h2>
+                            <p class="text-[9px] text-on-surface-variant mt-1">Awaiting validation</p>
+                        </div>
+                    </div>
+
+                    <!-- Rewards Earned -->
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between relative overflow-hidden group">
+                        <div class="absolute -right-4 -top-4 w-12 h-12 bg-primary/5 rounded-full pointer-events-none group-hover:scale-125 transition-transform duration-500"></div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant">Credits Earned</span>
+                            <span class="material-symbols-outlined text-primary text-[18px]">payments</span>
+                        </div>
+                        <div class="mt-4">
+                            <h2 id="refStat-rewards" class="text-2xl font-extrabold text-white leading-none">1,500</h2>
+                            <p class="text-[9px] text-primary font-semibold mt-1">Cortex AI Credits</p>
+                        </div>
+                    </div>
+
+                    <!-- Conversion Rate -->
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col justify-between relative overflow-hidden group">
+                        <div class="absolute -right-4 -top-4 w-12 h-12 bg-secondary/5 rounded-full pointer-events-none group-hover:scale-125 transition-transform duration-500"></div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant">Conversion Rate</span>
+                            <span class="material-symbols-outlined text-secondary text-[18px]">ads_click</span>
+                        </div>
+                        <div class="mt-4">
+                            <h2 id="refStat-conversion" class="text-2xl font-extrabold text-white leading-none">66.7%</h2>
+                            <p class="text-[9px] text-secondary font-semibold mt-1">High conversion yield</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CODE GENERATOR & LINK CARD -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Referral Code Card -->
+                    <div class="glass-panel p-6 rounded-2xl space-y-4 lg:col-span-2">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3">
+                            <span class="material-symbols-outlined text-primary text-[18px]">share</span>
+                            My Referral Link
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="md:col-span-1">
+                                    <label class="block text-[10px] uppercase font-bold tracking-wider text-on-surface-variant mb-1.5">Your Referral Code</label>
+                                    <div class="flex items-center bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 justify-between">
+                                        <span id="myReferralCodeText" class="font-code-sm text-xs text-primary font-bold">EF-ADMIN-A7X9K2</span>
+                                        <button class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center" onclick="copyReferralCode()" title="Copy Code">
+                                            <span id="copyCodeIcon" class="material-symbols-outlined text-[16px]">content_copy</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-[10px] uppercase font-bold tracking-wider text-on-surface-variant mb-1.5">Your Sharing Link</label>
+                                    <div class="flex items-center bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 justify-between">
+                                        <input type="text" id="myReferralLinkInput" class="bg-transparent border-0 p-0 text-xs text-white focus:outline-none focus:ring-0 w-full" readonly value="https://enterprise-flow-ai-snowflake-editio.vercel.app/signup?ref=EF-ADMIN-A7X9K2"/>
+                                        <button class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center ml-2" onclick="copyReferralLink()" title="Copy Link">
+                                            <span id="copyLinkIcon" class="material-symbols-outlined text-[16px]">content_copy</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Social Share Actions -->
+                            <div class="flex flex-wrap items-center gap-3 pt-2">
+                                <span class="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant mr-2">Share via:</span>
+                                
+                                <button class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5" onclick="shareReferral('whatsapp')">
+                                    <span class="material-symbols-outlined text-[16px]">chat</span>
+                                    WhatsApp
+                                </button>
+                                
+                                <button class="bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5" onclick="shareReferral('linkedin')">
+                                    <span class="material-symbols-outlined text-[16px]">connect_without_contact</span>
+                                    LinkedIn
+                                </button>
+
+                                <button class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5" onclick="shareReferral('email')">
+                                    <span class="material-symbols-outlined text-[16px]">mail</span>
+                                    Email
+                                </button>
+
+                                <button class="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ml-auto" onclick="shareReferral('native')">
+                                    <span class="material-symbols-outlined text-[16px]">share</span>
+                                    System Share
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QR Code Generator Card -->
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between space-y-4">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3">
+                            <span class="material-symbols-outlined text-secondary text-[18px]">qr_code_2</span>
+                            Referral QR Code
+                        </h3>
+                        <div class="flex items-center gap-4 flex-1">
+                            <div class="w-20 h-20 bg-white p-1 rounded-xl flex items-center justify-center shadow-lg relative cursor-pointer" onclick="openQrModal()">
+                                <!-- Centered Logo Overlay Mock -->
+                                <div id="referralMiniQrContainer" class="w-full h-full"></div>
+                            </div>
+                            <div class="space-y-1">
+                                <h4 class="text-xs font-bold text-white">Instant QR Code</h4>
+                                <p class="text-[10px] text-on-surface-variant leading-normal">Download a high-resolution QR graphic containing your logo to share at conferences.</p>
+                                <button class="text-secondary hover:text-secondary-dim font-bold text-xs flex items-center gap-1 mt-2 transition-colors" onclick="openQrModal()">
+                                    View full-size & download <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MILESTONE REWARDS PROGRESS -->
+                <div class="glass-panel p-6 rounded-2xl space-y-6">
+                    <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[18px]">military_tech</span>
+                            Referral Milestones & Rewards
+                        </h3>
+                        <span class="text-[10px] font-mono text-primary font-bold">NEXT REWARD: 10 INVITES</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Progress bar -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between text-[10px] uppercase font-bold tracking-wider text-on-surface-variant">
+                                <span>Milestone Completion</span>
+                                <span id="rewardMilestonePercentText" class="text-primary font-bold">32% Completed</span>
+                            </div>
+                            <div class="w-full bg-white/5 rounded-full h-3 border border-white/10 overflow-hidden relative">
+                                <div id="rewardProgressBar" class="bg-gradient-to-r from-secondary to-primary h-full rounded-full transition-all duration-1000" style="width: 32%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Milestone badges row -->
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 pt-2">
+                            <!-- Milestone 1 -->
+                            <div class="p-3 bg-white/5 border border-primary/40 rounded-xl flex items-center gap-3 relative group">
+                                <div class="absolute top-1 right-1 text-primary">
+                                    <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                </div>
+                                <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined text-[20px]">verified</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-[11px] font-bold text-white">1 Invite</h4>
+                                    <p class="text-[9px] text-on-surface-variant leading-none mt-1">Starter Badge</p>
+                                </div>
+                            </div>
+
+                            <!-- Milestone 2 -->
+                            <div class="p-3 bg-white/5 border border-primary/40 rounded-xl flex items-center gap-3 relative">
+                                <div class="absolute top-1 right-1 text-primary">
+                                    <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                </div>
+                                <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined text-[20px]">database</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-[11px] font-bold text-white">3 Invites</h4>
+                                    <p class="text-[9px] text-on-surface-variant leading-none mt-1">500 AI Credits</p>
+                                </div>
+                            </div>
+
+                            <!-- Milestone 3 -->
+                            <div class="p-3 bg-white/5 border border-primary/40 rounded-xl flex items-center gap-3 relative">
+                                <div class="absolute top-1 right-1 text-primary">
+                                    <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                </div>
+                                <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined text-[20px]">auto_stories</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-[11px] font-bold text-white">5 Invites</h4>
+                                    <p class="text-[9px] text-on-surface-variant leading-none mt-1">Pro Template Pack</p>
+                                </div>
+                            </div>
+
+                            <!-- Milestone 4 (Locked) -->
+                            <div class="p-3 bg-white/5 border border-white/5 opacity-60 rounded-xl flex items-center gap-3 relative">
+                                <div class="absolute top-1 right-1 text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-[14px]">lock</span>
+                                </div>
+                                <div class="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-[20px]">workspace_premium</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-[11px] font-bold text-white">10 Invites</h4>
+                                    <p class="text-[9px] text-on-surface-variant leading-none mt-1">1 Month Pro Access</p>
+                                </div>
+                            </div>
+
+                            <!-- Milestone 5 (Locked) -->
+                            <div class="p-3 bg-white/5 border border-white/5 opacity-60 rounded-xl flex items-center gap-3 relative">
+                                <div class="absolute top-1 right-1 text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-[14px]">lock</span>
+                                </div>
+                                <div class="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-[20px]">stars</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-[11px] font-bold text-white">25 Invites</h4>
+                                    <p class="text-[9px] text-on-surface-variant leading-none mt-1">Ambassador Badge</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REFERRAL HISTORY TABLE -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-3">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-secondary text-[18px]">history</span>
+                            Referral History Log
+                        </h3>
+                        <button class="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1" onclick="exportReferralsToCSV()">
+                            <span class="material-symbols-outlined text-[14px]">download</span>
+                            Export CSV
+                        </button>
+                    </div>
+
+                    <!-- Filters toolbar -->
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div>
+                            <input type="text" id="refHistorySearch" placeholder="Search referred email/user..." class="w-full bg-background border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-primary/45 transition-all" oninput="filterReferralHistoryTable()" />
+                        </div>
+                        <div>
+                            <select id="refHistoryStatusFilter" class="w-full bg-background border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-primary/45 transition-all" onchange="filterReferralHistoryTable()">
+                                <option value="all">All Statuses</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Registered">Registered</option>
+                                <option value="Verified">Verified</option>
+                                <option value="Rewarded">Rewarded</option>
+                                <option value="Rejected">Rejected</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input type="date" id="refHistoryDateFilter" class="w-full bg-background border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-primary/45 transition-all" onchange="filterReferralHistoryTable()" />
+                        </div>
+                        <div class="flex items-center justify-end">
+                            <span id="refHistoryCountText" class="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant font-mono">12 Records</span>
+                        </div>
+                    </div>
+
+                    <!-- Table (Desktop view) -->
+                    <div class="hidden md:block overflow-x-auto">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-white/10 text-on-surface-variant text-[10px] uppercase tracking-wider font-bold">
+                                    <th class="py-3 px-4">Referred User</th>
+                                    <th class="py-3 px-4">Email</th>
+                                    <th class="py-3 px-4">Referral Code</th>
+                                    <th class="py-3 px-4">Date Joined</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4">Reward</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="referralHistoryTableBody" class="divide-y divide-white/5 text-white">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Card Layout (Mobile view) -->
+                    <div id="referralHistoryMobileCards" class="block md:hidden space-y-3">
+                        <!-- Dynamic mobile cards -->
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="flex justify-between items-center pt-2">
+                        <span class="text-[10px] text-on-surface-variant font-mono">Page <span id="refHistoryPageNum">1</span> of <span id="refHistoryTotalPages">1</span></span>
+                        <div class="flex gap-2">
+                            <button id="refHistoryPrevPageBtn" class="bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg text-[10px] font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10 transition-colors" onclick="changeReferralsPage(-1)">Previous</button>
+                            <button id="refHistoryNextPageBtn" class="bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg text-[10px] font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10 transition-colors" onclick="changeReferralsPage(1)">Next</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REFERRAL ANALYTICS -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Referrals Over Time -->
+                    <div class="glass-panel p-6 rounded-2xl space-y-4 lg:col-span-2">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3">
+                            <span class="material-symbols-outlined text-primary text-[18px]">show_chart</span>
+                            Referrals over time
+                        </h3>
+                        <div class="w-full h-48 relative flex items-end">
+                            <svg class="w-full h-full overflow-visible" viewBox="0 0 500 160">
+                                <defs>
+                                    <linearGradient id="refTimeGlow" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.3"/>
+                                        <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0"/>
+                                    </linearGradient>
+                                </defs>
+                                <!-- Grid Lines -->
+                                <line x1="0" y1="40" x2="500" y2="40" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                                <line x1="0" y1="80" x2="500" y2="80" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                                <line x1="0" y1="120" x2="500" y2="120" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                                <!-- Trend Area & Stroke -->
+                                <path d="M 0 140 Q 100 120, 200 70 T 400 40 L 500 10 L 500 160 L 0 160 Z" fill="url(#refTimeGlow)"/>
+                                <path d="M 0 140 Q 100 120, 200 70 T 400 40 L 500 10" fill="none" stroke="var(--color-primary)" stroke-width="2.5"/>
+                                <!-- Dots -->
+                                <circle cx="200" cy="70" r="4.5" fill="var(--color-background)" stroke="var(--color-primary)" stroke-width="2"/>
+                                <circle cx="400" cy="40" r="4.5" fill="var(--color-background)" stroke="var(--color-primary)" stroke-width="2"/>
+                                <circle cx="500" cy="10" r="4.5" fill="var(--color-primary)" stroke="var(--color-primary)" stroke-width="2"/>
+                            </svg>
+                            <div class="absolute bottom-1 left-2 flex justify-between w-full text-[9px] font-mono text-on-surface-variant pr-8">
+                                <span>Jan</span>
+                                <span>Feb</span>
+                                <span>Mar</span>
+                                <span>Apr</span>
+                                <span>May</span>
+                                <span>Jun</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Source Breakdown & Conversion Rate -->
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between space-y-4">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3">
+                            <span class="material-symbols-outlined text-secondary text-[18px]">analytics</span>
+                            Referral Channels
+                        </h3>
+                        <div class="space-y-4 flex-1 flex flex-col justify-center">
+                            <!-- URL share -->
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-[10px] uppercase font-bold tracking-wider text-on-surface-variant">
+                                    <span>Slack/WhatsApp Link</span>
+                                    <span class="text-white font-mono">60%</span>
+                                </div>
+                                <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-primary h-full rounded-full" style="width: 60%"></div>
+                                </div>
+                            </div>
+                            <!-- LinkedIn -->
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-[10px] uppercase font-bold tracking-wider text-on-surface-variant">
+                                    <span>LinkedIn Social</span>
+                                    <span class="text-white font-mono">25%</span>
+                                </div>
+                                <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-secondary h-full rounded-full" style="width: 25%"></div>
+                                </div>
+                            </div>
+                            <!-- QR codes -->
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-[10px] uppercase font-bold tracking-wider text-on-surface-variant">
+                                    <span>QR Codes</span>
+                                    <span class="text-white font-mono">15%</span>
+                                </div>
+                                <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-primary-dim h-full rounded-full" style="width: 15%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3H. ADMIN REFERRAL TAB VIEW -->
+            <section id="view-admin-referrals" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-secondary text-[24px]">shield_person</span>
+                            Admin Referral Control Room
+                        </h1>
+                        <p class="text-xs text-on-surface-variant mt-1">Monitor user registrations, override codes, review fraud triggers, and approve milestone rewards.</p>
+                    </div>
+                </div>
+
+                <!-- ADMIN OVERVIEW KPIS -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="glass-panel p-4 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <span class="text-[9px] uppercase font-bold tracking-wider text-on-surface-variant block">Total Active Codes</span>
+                            <h3 id="adminRefStat-codes" class="text-2xl font-extrabold text-white mt-1">48</h3>
+                        </div>
+                        <span class="material-symbols-outlined text-primary text-[28px]">qr_code</span>
+                    </div>
+                    <div class="glass-panel p-4 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <span class="text-[9px] uppercase font-bold tracking-wider text-on-surface-variant block">Global Conversions</span>
+                            <h3 id="adminRefStat-conversions" class="text-2xl font-extrabold text-white mt-1">112</h3>
+                        </div>
+                        <span class="material-symbols-outlined text-secondary text-[28px]">check_circle</span>
+                    </div>
+                    <div class="glass-panel p-4 rounded-2xl flex items-center justify-between border border-error/20">
+                        <div>
+                            <span class="text-[9px] uppercase font-bold tracking-wider text-on-surface-variant block">Fraud Risk Flags</span>
+                            <h3 id="adminRefStat-flags" class="text-2xl font-extrabold text-error mt-1">2 Alerts</h3>
+                        </div>
+                        <span class="material-symbols-outlined text-error text-[28px]">warning</span>
+                    </div>
+                    <div class="glass-panel p-4 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <span class="text-[9px] uppercase font-bold tracking-wider text-on-surface-variant block">Pending Reviews</span>
+                            <h3 id="adminRefStat-reviews" class="text-2xl font-extrabold text-white mt-1">3</h3>
+                        </div>
+                        <span class="material-symbols-outlined text-white text-[28px]">rate_review</span>
+                    </div>
+                </div>
+
+                <!-- AUDIT TABLE -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3">
+                        <span class="material-symbols-outlined text-primary text-[18px]">security_update_good</span>
+                        Referral Integrity Audit Desk
+                    </h3>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-white/10 text-on-surface-variant text-[10px] uppercase tracking-wider font-bold">
+                                    <th class="py-3 px-4">Referrer</th>
+                                    <th class="py-3 px-4">Referred User</th>
+                                    <th class="py-3 px-4">Risk Score</th>
+                                    <th class="py-3 px-4">Reasons</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminReferralAuditTableBody" class="divide-y divide-white/5 text-white">
+                                <!-- Dynamic admin rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- USER CODES & OVERRIDES DIRECTORY -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3">
+                        <span class="material-symbols-outlined text-secondary text-[18px]">badge</span>
+                        Referral Registry & Code Overrides
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-white/10 text-on-surface-variant text-[10px] uppercase tracking-wider font-bold">
+                                    <th class="py-3 px-4">User</th>
+                                    <th class="py-3 px-4">Email</th>
+                                    <th class="py-3 px-4">Referral Code</th>
+                                    <th class="py-3 px-4">Referred By</th>
+                                    <th class="py-3 px-4 text-right">Overrides</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminReferralRegistryTableBody" class="divide-y divide-white/5 text-white">
+                                <!-- Dynamic registry rows -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
@@ -3294,6 +3822,51 @@
                     </div>
                     <span class="text-[9px] font-mono text-on-surface-variant">Active Run</span>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Referral QR Code Modal -->
+    <div id="referralQrModal" class="fixed inset-0 z-[10000] hidden bg-black/75 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300" onclick="closeQrModalOutside(event)">
+        <div class="glass-panel w-full max-w-sm rounded-2xl border border-white/10 shadow-2xl p-6 relative flex flex-col gap-6 bg-background/95 text-white select-none">
+            <!-- Header -->
+            <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[18px]">qr_code</span>
+                    Referral QR Code
+                </h3>
+                <button class="text-on-surface-variant hover:text-white transition-colors flex items-center justify-center" onclick="closeQrModal()">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            </div>
+
+            <!-- Content Area -->
+            <div class="flex flex-col items-center justify-center gap-4 text-center py-4">
+                <!-- Large QR Code wrapper with EnterpriseFlow logo in center -->
+                <div class="w-48 h-48 bg-white p-2.5 rounded-2xl shadow-xl flex items-center justify-center relative border border-white/10 group overflow-hidden">
+                    <div id="referralLargeQrContainer" class="w-full h-full"></div>
+                    <!-- Absolute logo overlay -->
+                    <div class="absolute w-10 h-10 bg-[#08111F] border border-primary/45 rounded-lg flex items-center justify-center shadow-lg text-primary">
+                        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">auto_graph</span>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <h4 id="qrModalCodeLabel" class="text-xs font-bold text-white uppercase tracking-wider">EF-ADMIN-A7X9K2</h4>
+                    <p class="text-[10px] text-on-surface-variant max-w-[16rem] leading-normal mx-auto">Scan this code to load the workspace selector and register under this user referral node.</p>
+                </div>
+            </div>
+
+            <!-- Actions footer -->
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button class="bg-primary text-on-secondary font-bold py-2.5 px-3 rounded-xl text-[10px] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-[0_0_12px_rgba(0,229,195,0.2)]" onclick="downloadQrCodePNG()">
+                    <span class="material-symbols-outlined text-[14px]">download</span>
+                    Download PNG
+                </button>
+                <button class="bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold py-2.5 px-3 rounded-xl text-[10px] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5" onclick="shareQrLink()">
+                    <span class="material-symbols-outlined text-[14px]">share</span>
+                    Share QR Link
+                </button>
             </div>
         </div>
     </div>

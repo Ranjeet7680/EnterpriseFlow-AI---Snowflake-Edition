@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     drawConnections();
     initLiveLogSimulator();
     refreshDashboard();
-    
+    initReferralSystem();
     // Listen for SQL execute keyboard shortcut (Ctrl + Enter)
     document.getElementById('sqlConsoleInput')?.addEventListener('keydown', (e) => {
         if (e.ctrlKey && e.key === 'Enter') {
@@ -572,6 +572,10 @@ function switchTab(tabId) {
     // Specific routing initializations
     if (tabId === 'workflows') {
         setTimeout(drawConnections, 50); // Redraw SVG path boundaries
+    } else if (tabId === 'referral-program') {
+        renderReferralDashboard();
+    } else if (tabId === 'admin-referrals') {
+        renderAdminReferralDashboard();
     }
 }
 
@@ -2146,6 +2150,9 @@ function submitAuthLogin() {
     const wsUser = document.getElementById('wsUserLabel');
     if (wsUser) wsUser.innerText = userId;
     
+    // Ensure User referral code exists in database
+    ensureUserCodeExists(userId, userId.toLowerCase() + "@cortex.ai");
+    
     // Transition to Workspace Selection screen
     const auth = document.getElementById('authContainer');
     const ws = document.getElementById('workspaceContainer');
@@ -2275,6 +2282,9 @@ function loginWithGoogleFirebase() {
             const wsUser = document.getElementById('wsUserLabel');
             if (wsUser) wsUser.innerText = userName;
             
+            // Ensure User referral code exists in database
+            ensureUserCodeExists(userName, user.email);
+            
             // Update user header profile avatar dynamically
             if (user.photoURL) {
                 const avatar = document.getElementById('userHeaderAvatar');
@@ -2332,4 +2342,834 @@ function logoutSession() {
             }, 500);
         }
     }
+}
+
+// ==========================================
+// 11. REFERRAL CODE SYSTEM LOGIC
+// ==========================================
+let referralPage = 1;
+const referralLimit = 5;
+let filteredReferrals = [];
+
+function initReferralSystem() {
+    // 1. Seed Referral Database in LocalStorage if not present
+    if (!localStorage.getItem('referral_users')) {
+        const defaultUsers = [
+            { id: 'usr_admin', name: 'ADMIN_CORTEX', email: 'admin@cortex.ai', referral_code: 'EF-ADMIN-A7X9K2', referred_by: 'none', created_at: '2026-06-01' },
+            { id: 'usr_ranjeet', name: 'Ranjeet Kumar', email: 'rajranjeet7680@gmail.com', referral_code: 'EF-RANJEET-A7X9K2', referred_by: 'none', created_at: '2026-06-01' },
+            { id: 'usr_haris', name: 'Haris Kumar', email: 'hariskumarramachandran@gmail.com', referral_code: 'EF-HARIS-P2K5Z9', referred_by: 'none', created_at: '2026-06-01' },
+            { id: 'usr_sneha', name: 'Sneha Kukreja', email: 'snehakukreja202@gmail.com', referral_code: 'EF-SNEHA-L9Q1W4', referred_by: 'none', created_at: '2026-06-01' },
+            { id: 'usr_saikumar', name: 'Saikumar Sadam', email: 'saikumaryadav24680@gmail.com', referral_code: 'EF-SAIKUMAR-R8V2K6', referred_by: 'none', created_at: '2026-06-01' }
+        ];
+        localStorage.setItem('referral_users', JSON.stringify(defaultUsers));
+    }
+
+    if (!localStorage.getItem('referrals_list')) {
+        const defaultReferrals = [
+            { id: 'ref_01', referrer_user_id: 'usr_admin', referred_user_id: 'usr_referred_01', referred_name: 'Acme Partner', referred_email: 'partner-acme@gmail.com', referral_code: 'EF-ADMIN-A7X9K2', status: 'Rewarded', source: 'URL', created_at: '2026-06-05', reward: '500 AI Credits' },
+            { id: 'ref_02', referrer_user_id: 'usr_admin', referred_user_id: 'usr_referred_02', referred_name: 'Globex Corp', referred_email: 'corp-globex@gmail.com', referral_code: 'EF-ADMIN-A7X9K2', status: 'Rewarded', source: 'URL', created_at: '2026-06-07', reward: '500 AI Credits' },
+            { id: 'ref_03', referrer_user_id: 'usr_admin', referred_user_id: 'usr_referred_03', referred_name: 'Soylent Devs', referred_email: 'dev-soylent@gmail.com', referral_code: 'EF-ADMIN-A7X9K2', status: 'Rewarded', source: 'Manual', created_at: '2026-06-12', reward: '500 AI Credits' },
+            { id: 'ref_04', referrer_user_id: 'usr_admin', referred_user_id: 'usr_referred_04', referred_name: 'Initech Ops', referred_email: 'ops-initech@gmail.com', referral_code: 'EF-ADMIN-A7X9K2', status: 'Verified', source: 'URL', created_at: '2026-06-18', reward: 'Starter Badge' },
+            { id: 'ref_05', referrer_user_id: 'usr_admin', referred_user_id: 'usr_referred_05', referred_name: 'Hooli Data', referred_email: 'data-hooli@gmail.com', referral_code: 'EF-ADMIN-A7X9K2', status: 'Verified', source: 'URL', created_at: '2026-06-22', reward: 'None' },
+            { id: 'ref_06', referrer_user_id: 'usr_admin', referred_user_id: 'usr_referred_06', referred_name: 'Umbrella Sys', referred_email: 'sys-umbrella@gmail.com', referral_code: 'EF-ADMIN-A7X9K2', status: 'Verified', source: 'Manual', created_at: '2026-06-26', reward: 'None' },
+            { id: 'ref_07', referrer_user_id: 'usr_admin', referred_user_id: 'usr_referred_07', referred_name: 'Vehement Cloud', referred_email: 'cloud-vehement@gmail.com', referral_code: 'EF-ADMIN-A7X9K2', status: 'Verified', source: 'URL', created_at: '2026-07-01', reward: 'None' },
+            { id: 'ref_08', referrer_user_id: 'usr_admin', referred_user_id: 'usr_referred_08', referred_name: 'Tessier Analyst', referred_email: 'analyst-tessier@gmail.com', referral_code: 'EF-ADMIN-A7X9K2', status: 'Verified', source: 'URL', created_at: '2026-07-02', reward: 'None' },
+            { id: 'ref_09', referrer_user_id: 'usr_admin', referred_user_id: 'usr_referred_09', referred_name: 'Spooli Tech', referred_email: 'test-spooli@gmail.com', referral_code: 'EF-ADMIN-A7X9K2', status: 'Pending', source: 'URL', created_at: '2026-07-03', reward: 'None' },
+            { id: 'ref_10', referrer_user_id: 'usr_admin', referred_user_id: 'usr_referred_10', referred_name: 'Cyberdyne LLC', referred_email: 'user-cyberdyne@gmail.com', referral_code: 'EF-ADMIN-A7X9K2', status: 'Pending', source: 'URL', created_at: '2026-07-04', reward: 'None' },
+            { id: 'ref_11', referrer_user_id: 'usr_admin', referred_user_id: 'usr_referred_11', referred_name: 'Tyrell Nexus', referred_email: 'user-tyrell@gmail.com', referral_code: 'EF-ADMIN-A7X9K2', status: 'Pending', source: 'URL', created_at: '2026-07-05', reward: 'None' },
+            { id: 'ref_12', referrer_user_id: 'usr_admin', referred_user_id: 'usr_referred_12', referred_name: 'Bot Account 12', referred_email: 'fake-bot-12@gmail.com', referral_code: 'EF-ADMIN-A7X9K2', status: 'Rejected', source: 'URL', created_at: '2026-07-05', reward: 'None' }
+        ];
+        localStorage.setItem('referrals_list', JSON.stringify(defaultReferrals));
+    }
+
+    if (!localStorage.getItem('referral_fraud_flags_list')) {
+        const defaultFraud = [
+            { id: 'frd_01', referral_id: 'ref_12', risk_score: 0.92, reasons: ['SAME_IP_REGISTRATION', 'DUPLICATE_DEVICE_SIGNATURE'], review_status: 'Flagged' },
+            { id: 'frd_02', referral_id: 'ref_11', risk_score: 0.45, reasons: ['VPN_IP_DETECTED'], review_status: 'Reviewing' }
+        ];
+        localStorage.setItem('referral_fraud_flags_list', JSON.stringify(defaultFraud));
+    }
+
+    // 2. Parse URL Search parameters on startup
+    const urlParams = new URLSearchParams(window.location.search);
+    const refParam = urlParams.get('ref') || urlParams.get('referral');
+    if (refParam) {
+        localStorage.setItem('pending_referral_referrer', refParam.toUpperCase());
+        const refInput = document.getElementById('loginReferralCode');
+        if (refInput) {
+            refInput.value = refParam.toUpperCase();
+            validateReferralInputRealTime();
+            showSlackToast(`Referral applied: ${refParam.toUpperCase()}`);
+        }
+    }
+}
+
+function ensureUserCodeExists(username, email) {
+    let users = JSON.parse(localStorage.getItem('referral_users') || '[]');
+    let exists = users.find(u => u.name === username || u.email === email);
+    if (!exists) {
+        let code = generateUniqueReferralCode(username);
+        users.push({
+            id: 'usr_' + Math.random().toString(36).substr(2, 9),
+            name: username,
+            email: email || (username.toLowerCase().replace(/\s/g, '') + '@cortex.ai'),
+            referral_code: code,
+            referred_by: localStorage.getItem('pending_referral_referrer') || 'none',
+            created_at: new Date().toISOString().split('T')[0]
+        });
+        localStorage.setItem('referral_users', JSON.stringify(users));
+        
+        // If there was a pending referrer, register referral relation
+        const referrerCode = localStorage.getItem('pending_referral_referrer');
+        if (referrerCode && referrerCode !== 'none') {
+            registerNewReferralClaim(referrerCode, username, email);
+            localStorage.removeItem('pending_referral_referrer');
+        }
+    }
+}
+
+function generateUniqueReferralCode(username) {
+    const cleanName = username.replace(/[^a-zA-Z]/g, '').toUpperCase().substr(0, 7);
+    const randHex = Math.floor(100000 + Math.random() * 900000).toString(16).toUpperCase().substr(0, 6);
+    return `EF-${cleanName || 'USER'}-${randHex}`;
+}
+
+function registerNewReferralClaim(referrerCode, username, email) {
+    let referrals = JSON.parse(localStorage.getItem('referrals_list') || '[]');
+    let users = JSON.parse(localStorage.getItem('referral_users') || '[]');
+    
+    // Find referrer
+    const referrer = users.find(u => u.referral_code === referrerCode);
+    const referrerId = referrer ? referrer.id : 'usr_admin';
+
+    // Prevent duplicate referred records
+    if (referrals.find(r => r.referred_email === email)) return;
+
+    // Check same IP fraud logic simulation
+    const simulatedRiskScore = (Math.random() > 0.85) ? 0.82 : 0.05;
+    const refId = 'ref_' + Math.random().toString(36).substr(2, 9);
+    
+    referrals.push({
+        id: refId,
+        referrer_user_id: referrerId,
+        referred_user_id: 'usr_referred_' + Math.random().toString(36).substr(2, 9),
+        referred_name: username,
+        referred_email: email,
+        referral_code: referrerCode,
+        status: 'Pending',
+        source: 'URL',
+        created_at: new Date().toISOString().split('T')[0],
+        reward: 'None'
+    });
+    localStorage.setItem('referrals_list', JSON.stringify(referrals));
+
+    if (simulatedRiskScore > 0.8) {
+        let fraudFlags = JSON.parse(localStorage.getItem('referral_fraud_flags_list') || '[]');
+        fraudFlags.push({
+            id: 'frd_' + Math.random().toString(36).substr(2, 9),
+            referral_id: refId,
+            risk_score: simulatedRiskScore,
+            reasons: ['SAME_IP_REGISTRATION'],
+            review_status: 'Flagged'
+        });
+        localStorage.setItem('referral_fraud_flags_list', JSON.stringify(fraudFlags));
+    }
+}
+
+function validateReferralInputRealTime() {
+    const input = document.getElementById('loginReferralCode');
+    const msg = document.getElementById('referralValidationMsg');
+    if (!input || !msg) return;
+
+    const val = input.value.trim().toUpperCase();
+    input.value = val;
+
+    if (!val) {
+        msg.classList.add('hidden');
+        input.parentElement.className = "relative flex items-center bg-white/5 border border-white/10 rounded-xl focus-within:border-primary/50 transition-all";
+        return;
+    }
+
+    msg.classList.remove('hidden');
+
+    // Self-referral protection checks
+    const activeUserId = document.getElementById('loginUserId').value.trim();
+    let users = JSON.parse(localStorage.getItem('referral_users') || '[]');
+    
+    // Check if code matches active user's generated code
+    const matchingActiveUser = users.find(u => u.name === activeUserId && u.referral_code === val);
+    if (matchingActiveUser) {
+        msg.className = "text-[9px] mt-1.5 font-semibold text-error";
+        msg.innerText = "❌ Invalid code: Self-referrals are blocked.";
+        input.parentElement.className = "relative flex items-center bg-error/10 border border-error rounded-xl transition-all";
+        return;
+    }
+
+    const matchesCode = users.find(u => u.referral_code === val);
+    if (matchesCode) {
+        msg.className = "text-[9px] mt-1.5 font-semibold text-primary";
+        msg.innerText = `✔ Valid referral code: From ${matchesCode.name}`;
+        input.parentElement.className = "relative flex items-center bg-primary/10 border border-primary rounded-xl transition-all";
+    } else {
+        msg.className = "text-[9px] mt-1.5 font-semibold text-error";
+        msg.innerText = "❌ Invalid or expired referral code.";
+        input.parentElement.className = "relative flex items-center bg-error/10 border border-error rounded-xl transition-all";
+    }
+}
+
+// ==========================================
+// 12. RENDER ACTIONS FOR REFERRAL VIEWS
+// ==========================================
+function renderReferralDashboard() {
+    const currentUserId = document.getElementById('wsUserLabel')?.innerText || 'ADMIN_CORTEX';
+    let users = JSON.parse(localStorage.getItem('referral_users') || '[]');
+    let referrals = JSON.parse(localStorage.getItem('referrals_list') || '[]');
+
+    let currentUser = users.find(u => u.name === currentUserId);
+    if (!currentUser) {
+        ensureUserCodeExists(currentUserId, currentUserId.toLowerCase() + '@cortex.ai');
+        users = JSON.parse(localStorage.getItem('referral_users') || '[]');
+        currentUser = users.find(u => u.name === currentUserId);
+    }
+
+    const code = currentUser.referral_code;
+    
+    // Update code labels
+    document.getElementById('myReferralCodeText').innerText = code;
+    document.getElementById('myReferralLinkInput').value = `https://enterprise-flow-ai-snowflake-editio.vercel.app/signup?ref=${code}`;
+    document.getElementById('qrModalCodeLabel').innerText = code;
+
+    // Draw Mini QR
+    drawQrCode('referralMiniQrContainer', code);
+    
+    // Filter referrals belonging to active code
+    const myReferrals = referrals.filter(r => r.referral_code === code);
+    filteredReferrals = [...myReferrals];
+
+    // Compute stats
+    const total = myReferrals.length;
+    const signups = myReferrals.filter(r => r.status === 'Verified' || r.status === 'Rewarded').length;
+    const pending = myReferrals.filter(r => r.status === 'Pending').length;
+    const rewards = signups * 500; // 500 AI credits per success signup
+    const conversion = total > 0 ? ((signups / total) * 100).toFixed(1) + '%' : '0.0%';
+
+    // Animate stats counter triggers
+    document.getElementById('refStat-total').innerText = total;
+    document.getElementById('refStat-signups').innerText = signups;
+    document.getElementById('refStat-pending').innerText = pending;
+    document.getElementById('refStat-rewards').innerText = rewards.toLocaleString();
+    document.getElementById('refStat-conversion').innerText = conversion;
+
+    // Milestone calculation progress bar
+    const milestoneCap = 25;
+    const completionPercent = Math.min(100, Math.round((signups / milestoneCap) * 100));
+    document.getElementById('rewardMilestonePercentText').innerText = `${completionPercent}% Completed`;
+    document.getElementById('rewardProgressBar').style.width = `${completionPercent}%`;
+
+    // Filter table log
+    filterReferralHistoryTable();
+}
+
+function renderAdminReferralDashboard() {
+    let referrals = JSON.parse(localStorage.getItem('referrals_list') || '[]');
+    let fraudFlags = JSON.parse(localStorage.getItem('referral_fraud_flags_list') || '[]');
+    let users = JSON.parse(localStorage.getItem('referral_users') || '[]');
+
+    // Setup Admin KPIs
+    document.getElementById('adminRefStat-codes').innerText = users.length;
+    document.getElementById('adminRefStat-conversions').innerText = referrals.filter(r => r.status === 'Verified' || r.status === 'Rewarded').length;
+    document.getElementById('adminRefStat-flags').innerText = fraudFlags.filter(f => f.review_status === 'Flagged').length + ' Alerts';
+    document.getElementById('adminRefStat-reviews').innerText = referrals.filter(r => r.status === 'Pending').length;
+
+    // Render Admin Audit table
+    const auditBody = document.getElementById('adminReferralAuditTableBody');
+    if (auditBody) {
+        auditBody.innerHTML = "";
+        
+        // Match referrals with fraud flags
+        referrals.forEach(ref => {
+            const fraud = fraudFlags.find(f => f.referral_id === ref.id);
+            const riskScore = fraud ? (fraud.risk_score * 100).toFixed(0) + '%' : '3%';
+            const riskColor = fraud ? 'text-error font-bold' : 'text-on-surface-variant';
+            const reasons = fraud ? fraud.reasons.join(', ') : 'None detected';
+
+            const referrerUser = users.find(u => u.id === ref.referrer_user_id);
+            const referrerName = referrerUser ? referrerUser.name : 'Unknown';
+
+            let statusBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-white/5 text-on-surface-variant">${ref.status}</span>`;
+            if (ref.status === 'Verified' || ref.status === 'Rewarded') {
+                statusBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-primary/10 text-primary">${ref.status}</span>`;
+            } else if (ref.status === 'Rejected') {
+                statusBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-error/10 text-error">${ref.status}</span>`;
+            } else if (ref.status === 'Pending') {
+                statusBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-secondary/10 text-secondary">${ref.status}</span>`;
+            }
+
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-white/5 hover:bg-white/5 transition-colors text-xs";
+            tr.innerHTML = `
+                <td class="py-3 px-4 text-white font-semibold">${referrerName}</td>
+                <td class="py-3 px-4 text-on-surface-variant">${ref.referred_email}</td>
+                <td class="py-3 px-4 ${riskColor}">${riskScore}</td>
+                <td class="py-3 px-4 text-on-surface-variant">${reasons}</td>
+                <td class="py-3 px-4">${statusBadge}</td>
+                <td class="py-3 px-4 text-right flex justify-end gap-2 pt-2.5">
+                    ${ref.status === 'Pending' || fraud ? `
+                        <button class="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/20 px-2 py-1 rounded text-[9px] font-bold transition-all" onclick="approveReferral('${ref.id}')">Approve</button>
+                        <button class="bg-error/20 hover:bg-error/30 text-error border border-error/20 px-2 py-1 rounded text-[9px] font-bold transition-all" onclick="rejectReferral('${ref.id}')">Reject</button>
+                    ` : `<span class="text-[9px] text-on-surface-variant">Closed</span>`}
+                </td>
+            `;
+            auditBody.appendChild(tr);
+        });
+    }
+
+    // Render Overrides Directory
+    const registryBody = document.getElementById('adminReferralRegistryTableBody');
+    if (registryBody) {
+        registryBody.innerHTML = "";
+        
+        users.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-white/5 hover:bg-white/5 transition-colors text-xs";
+            tr.innerHTML = `
+                <td class="py-3 px-4 text-white font-semibold">${u.name}</td>
+                <td class="py-3 px-4 text-on-surface-variant">${u.email}</td>
+                <td class="py-3 px-4 font-mono text-primary font-bold">${u.referral_code}</td>
+                <td class="py-3 px-4 text-on-surface-variant uppercase">${u.referred_by}</td>
+                <td class="py-3 px-4 text-right flex justify-end gap-2 pt-2.5">
+                    <button class="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-2 py-1 rounded text-[9px] font-bold transition-all" onclick="regenerateReferralCode('${u.id}')">Regen</button>
+                    <button class="bg-error/10 hover:bg-error/20 text-error border border-error/20 px-2 py-1 rounded text-[9px] font-bold transition-all" onclick="blockSuspiciousAccount('${u.id}')">Disable</button>
+                </td>
+            `;
+            registryBody.appendChild(tr);
+        });
+    }
+}
+
+// ==========================================
+// 13. SHARING & QR CODE MANAGEMENT
+// ==========================================
+function copyReferralCode() {
+    const code = document.getElementById('myReferralCodeText').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+        showSlackToast("Referral Code copied to clipboard!");
+        
+        // Add subtle copy animation success checks
+        const icon = document.getElementById('copyCodeIcon');
+        if (icon) {
+            icon.innerText = "check";
+            icon.classList.add("text-primary");
+            setTimeout(() => {
+                icon.innerText = "content_copy";
+                icon.classList.remove("text-primary");
+            }, 1500);
+        }
+    });
+}
+
+function copyReferralLink() {
+    const link = document.getElementById('myReferralLinkInput').value;
+    navigator.clipboard.writeText(link).then(() => {
+        showSlackToast("Sharing referral link copied to clipboard!");
+        const icon = document.getElementById('copyLinkIcon');
+        if (icon) {
+            icon.innerText = "check";
+            icon.classList.add("text-primary");
+            setTimeout(() => {
+                icon.innerText = "content_copy";
+                icon.classList.remove("text-primary");
+            }, 1500);
+        }
+    });
+}
+
+function shareReferral(channel) {
+    const link = encodeURIComponent(document.getElementById('myReferralLinkInput').value);
+    const text = encodeURIComponent("Deploy Snowflake Cortex LLM agent pipelines using EnterpriseFlow AI. Sign up using my referral invite: ");
+    
+    let url = "";
+    if (channel === 'whatsapp') {
+        url = `https://api.whatsapp.com/send?text=${text}${link}`;
+    } else if (channel === 'linkedin') {
+        url = `https://www.linkedin.com/sharing/share-offsite/?url=${link}`;
+    } else if (channel === 'email') {
+        url = `mailto:?subject=Join%20EnterpriseFlow%20AI&body=${text}${link}`;
+    } else if (channel === 'native') {
+        if (navigator.share) {
+            navigator.share({
+                title: 'Join EnterpriseFlow AI',
+                text: 'Deploy Snowflake Cortex AI agent pipelines using EnterpriseFlow AI.',
+                url: document.getElementById('myReferralLinkInput').value
+            }).then(() => {
+                showSlackToast("Shared successfully.");
+            }).catch(err => {
+                console.log("Native share failed: ", err);
+            });
+            return;
+        } else {
+            copyReferralLink();
+            return;
+        }
+    }
+    
+    if (url) {
+        window.open(url, '_blank');
+    }
+}
+
+function openQrModal() {
+    const modal = document.getElementById('referralQrModal');
+    const currentCode = document.getElementById('myReferralCodeText').innerText;
+    
+    if (modal) {
+        modal.classList.remove('hidden');
+        drawQrCode('referralLargeQrContainer', currentCode);
+    }
+}
+
+function closeQrModal() {
+    const modal = document.getElementById('referralQrModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+function closeQrModalOutside(event) {
+    if (event.target.id === 'referralQrModal') {
+        closeQrModal();
+    }
+}
+
+function drawQrCode(containerId, codeText) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = "";
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = 180;
+    canvas.height = 180;
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.style.display = "block";
+    canvas.className = "rounded-lg";
+    container.appendChild(canvas);
+    
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, 180, 180);
+    
+    ctx.fillStyle = "#08111F";
+    // Top Left finder
+    ctx.fillRect(10, 10, 42, 42);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(16, 16, 30, 30);
+    ctx.fillStyle = "#08111F";
+    ctx.fillRect(22, 22, 18, 18);
+    
+    // Top Right finder
+    ctx.fillStyle = "#08111F";
+    ctx.fillRect(128, 10, 42, 42);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(134, 16, 30, 30);
+    ctx.fillStyle = "#08111F";
+    ctx.fillRect(140, 22, 18, 18);
+    
+    // Bottom Left finder
+    ctx.fillStyle = "#08111F";
+    ctx.fillRect(10, 128, 42, 42);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(16, 134, 30, 30);
+    ctx.fillStyle = "#08111F";
+    ctx.fillRect(22, 140, 18, 18);
+    
+    let hash = 0;
+    for (let i = 0; i < codeText.length; i++) {
+        hash = codeText.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    ctx.fillStyle = "#08111F";
+    for (let row = 0; row < 25; row++) {
+        for (let col = 0; col < 25; col++) {
+            if ((row < 8 && col < 8) || (row < 8 && col > 16) || (row > 16 && col < 8)) {
+                continue;
+            }
+            let val = Math.abs(Math.sin(hash + row * 19 + col * 31));
+            if (val > 0.5) {
+                ctx.fillRect(15 + col * 6, 15 + row * 6, 6, 6);
+            }
+        }
+    }
+    
+    // Small alignment helper
+    ctx.fillRect(140, 140, 18, 18);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(144, 144, 10, 10);
+    ctx.fillStyle = "#08111F";
+    ctx.fillRect(148, 148, 2, 2);
+}
+
+function downloadQrCodePNG() {
+    const currentCode = document.getElementById('myReferralCodeText').innerText;
+    
+    // Render a high-resolution canvas version for downloading
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, 512, 512);
+    
+    // Finder patterns
+    ctx.fillStyle = "#08111F";
+    ctx.fillRect(28, 28, 120, 120);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(45, 45, 86, 86);
+    ctx.fillStyle = "#08111F";
+    ctx.fillRect(62, 62, 52, 52);
+    
+    ctx.fillRect(364, 28, 120, 120);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(381, 45, 86, 86);
+    ctx.fillStyle = "#08111F";
+    ctx.fillRect(398, 62, 52, 52);
+    
+    ctx.fillRect(28, 364, 120, 120);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(45, 381, 86, 86);
+    ctx.fillStyle = "#08111F";
+    ctx.fillRect(62, 398, 52, 52);
+    
+    let hash = 0;
+    for (let i = 0; i < currentCode.length; i++) {
+        hash = currentCode.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    ctx.fillStyle = "#08111F";
+    for (let row = 0; row < 25; row++) {
+        for (let col = 0; col < 25; col++) {
+            if ((row < 8 && col < 8) || (row < 8 && col > 16) || (row > 16 && col < 8)) {
+                continue;
+            }
+            let val = Math.abs(Math.sin(hash + row * 19 + col * 31));
+            if (val > 0.5) {
+                ctx.fillRect(42 + col * 17.2, 42 + row * 17.2, 17.2, 17.2);
+            }
+        }
+    }
+    
+    // Centered branding overlay
+    ctx.fillStyle = "#08111F";
+    ctx.strokeStyle = "#00dfbe";
+    ctx.lineWidth = 4;
+    ctx.fillRect(206, 206, 100, 100);
+    ctx.strokeRect(206, 206, 100, 100);
+    
+    // Draw simple Snowflake style polygon
+    ctx.fillStyle = "#70ffe0";
+    ctx.beginPath();
+    ctx.arc(256, 256, 20, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Save image trigger download
+    const link = document.createElement('a');
+    link.download = `referral_qr_${currentCode}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showSlackToast("Downloading high-resolution QR PNG!");
+}
+
+function shareQrLink() {
+    copyReferralLink();
+    closeQrModal();
+}
+
+// ==========================================
+// 14. PAGINATED HISTORY TABLE LOGS
+// ==========================================
+function filterReferralHistoryTable() {
+    const searchVal = document.getElementById('refHistorySearch')?.value.trim().toLowerCase() || '';
+    const statusVal = document.getElementById('refHistoryStatusFilter')?.value || 'all';
+    const dateVal = document.getElementById('refHistoryDateFilter')?.value || '';
+
+    // Filter referrals matching user code
+    const currentCode = document.getElementById('myReferralCodeText').innerText;
+    let referrals = JSON.parse(localStorage.getItem('referrals_list') || '[]');
+    
+    let list = referrals.filter(r => r.referral_code === currentCode);
+    
+    if (searchVal) {
+        list = list.filter(r => r.referred_email.toLowerCase().includes(searchVal) || r.referred_name.toLowerCase().includes(searchVal));
+    }
+    if (statusVal !== 'all') {
+        list = list.filter(r => r.status === statusVal);
+    }
+    if (dateVal) {
+        list = list.filter(r => r.created_at === dateVal);
+    }
+
+    filteredReferrals = list;
+    referralPage = 1;
+    displayReferralHistoryRows();
+}
+
+function displayReferralHistoryRows() {
+    const tbody = document.getElementById('referralHistoryTableBody');
+    const mCards = document.getElementById('referralHistoryMobileCards');
+    if (!tbody || !mCards) return;
+
+    tbody.innerHTML = "";
+    mCards.innerHTML = "";
+
+    const total = filteredReferrals.length;
+    const pages = Math.max(1, Math.ceil(total / referralLimit));
+    
+    document.getElementById('refHistoryCountText').innerText = `${total} Records`;
+    document.getElementById('refHistoryPageNum').innerText = referralPage;
+    document.getElementById('refHistoryTotalPages').innerText = pages;
+
+    document.getElementById('refHistoryPrevPageBtn').disabled = (referralPage === 1);
+    document.getElementById('refHistoryNextPageBtn').disabled = (referralPage === pages);
+
+    const startIdx = (referralPage - 1) * referralLimit;
+    const pageItems = filteredReferrals.slice(startIdx, startIdx + referralLimit);
+
+    if (pageItems.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-on-surface-variant text-xs">No referral logs found matching filters.</td></tr>`;
+        mCards.innerHTML = `<div class="p-4 text-center text-on-surface-variant text-xs">No referral logs found matching filters.</div>`;
+        return;
+    }
+
+    pageItems.forEach(item => {
+        let statusClass = "bg-white/5 text-on-surface-variant";
+        if (item.status === 'Verified' || item.status === 'Rewarded') statusClass = "bg-primary/10 text-primary border border-primary/20";
+        if (item.status === 'Rejected') statusClass = "bg-error/10 text-error border border-error/20";
+        if (item.status === 'Pending') statusClass = "bg-secondary/10 text-secondary border border-secondary/20";
+
+        // Desktop Row
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-white/5 hover:bg-white/5 transition-all text-xs";
+        tr.innerHTML = `
+            <td class="py-3.5 px-4 font-bold text-white">${item.referred_name}</td>
+            <td class="py-3.5 px-4 text-on-surface-variant">${item.referred_email}</td>
+            <td class="py-3.5 px-4 font-mono text-[10px]">${item.referral_code}</td>
+            <td class="py-3.5 px-4 text-on-surface-variant">${item.created_at}</td>
+            <td class="py-3.5 px-4">
+                <span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold ${statusClass}">${item.status}</span>
+            </td>
+            <td class="py-3.5 px-4 font-mono font-bold text-primary">${item.reward}</td>
+            <td class="py-3.5 px-4 text-right text-on-surface-variant">
+                <span class="material-symbols-outlined text-[15px] cursor-pointer hover:text-primary transition-colors" onclick="showSlackToast('Auditing invite record logs...')">verified_user</span>
+            </td>
+        `;
+        tbody.appendChild(tr);
+
+        // Mobile Card
+        const card = document.createElement('div');
+        card.className = "glass-panel p-4 rounded-xl space-y-2 text-xs relative";
+        card.innerHTML = `
+            <div class="flex justify-between items-center">
+                <span class="font-bold text-white">${item.referred_name}</span>
+                <span class="px-2 py-0.5 rounded-full text-[8px] font-bold ${statusClass}">${item.status}</span>
+            </div>
+            <p class="text-[10px] text-on-surface-variant">${item.referred_email}</p>
+            <div class="flex justify-between items-center text-[10px] pt-1 border-t border-white/5 mt-1">
+                <span class="text-on-surface-variant font-mono">Date: ${item.created_at}</span>
+                <span class="text-primary font-bold font-mono">Reward: ${item.reward}</span>
+            </div>
+        `;
+        mCards.appendChild(card);
+    });
+}
+
+function changeReferralsPage(dir) {
+    referralPage += dir;
+    displayReferralHistoryRows();
+}
+
+function exportReferralsToCSV() {
+    let csv = "Referred User,Email,Referral Code,Date Joined,Status,Reward\n";
+    filteredReferrals.forEach(item => {
+        csv += `"${item.referred_name}","${item.referred_email}","${item.referral_code}","${item.created_at}","${item.status}","${item.reward}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", `referral_registry_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showSlackToast("CSV Registry export downloaded successfully!");
+}
+
+// ==========================================
+// 15. ADMIN CONTROLS OVERRIDES
+// ==========================================
+function approveReferral(referredId) {
+    let referrals = JSON.parse(localStorage.getItem('referrals_list') || '[]');
+    let fraudFlags = JSON.parse(localStorage.getItem('referral_fraud_flags_list') || '[]');
+
+    const index = referrals.findIndex(r => r.id === referredId);
+    if (index !== -1) {
+        referrals[index].status = 'Verified';
+        referrals[index].reward = 'Starter Badge';
+        
+        // After verifying, we trigger rewarded state if invite counts grow
+        const referrerCode = referrals[index].referral_code;
+        const successes = referrals.filter(r => r.referral_code === referrerCode && (r.status === 'Verified' || r.status === 'Rewarded')).length;
+
+        if (successes >= 3) {
+            referrals[index].status = 'Rewarded';
+            referrals[index].reward = '500 AI Credits';
+        }
+
+        localStorage.setItem('referrals_list', JSON.stringify(referrals));
+
+        // Clear fraud flags if any
+        fraudFlags = fraudFlags.filter(f => f.referral_id !== referredId);
+        localStorage.setItem('referral_fraud_flags_list', JSON.stringify(fraudFlags));
+
+        showSlackToast("Referral approved. Reward dispatched to Referrer node.");
+        
+        // Notify referrer dynamically
+        dispatchNotificationAlert("Milestone Reward Unlocked", `Congratulations! Your referred node registration was verified. 500 Credits added.`, 'military_tech');
+        
+        renderAdminReferralDashboard();
+    }
+}
+
+function rejectReferral(referredId) {
+    let referrals = JSON.parse(localStorage.getItem('referrals_list') || '[]');
+    const index = referrals.findIndex(r => r.id === referredId);
+    if (index !== -1) {
+        referrals[index].status = 'Rejected';
+        localStorage.setItem('referrals_list', JSON.stringify(referrals));
+        
+        showSlackToast("Referral rejected due to policy violations.");
+        renderAdminReferralDashboard();
+    }
+}
+
+function regenerateReferralCode(userId) {
+    let users = JSON.parse(localStorage.getItem('referral_users') || '[]');
+    const idx = users.findIndex(u => u.id === userId);
+    if (idx !== -1) {
+        const oldCode = users[idx].referral_code;
+        const newCode = generateUniqueReferralCode(users[idx].name);
+        users[idx].referral_code = newCode;
+        localStorage.setItem('referral_users', JSON.stringify(users));
+
+        // Update referrals mapped to old code to use new code
+        let referrals = JSON.parse(localStorage.getItem('referrals_list') || '[]');
+        referrals.forEach(ref => {
+            if (ref.referral_code === oldCode) {
+                ref.referral_code = newCode;
+            }
+        });
+        localStorage.setItem('referrals_list', JSON.stringify(referrals));
+
+        showSlackToast(`Regenerated code for ${users[idx].name}: ${newCode}`);
+        renderAdminReferralDashboard();
+    }
+}
+
+function blockSuspiciousAccount(userId) {
+    let users = JSON.parse(localStorage.getItem('referral_users') || '[]');
+    const idx = users.findIndex(u => u.id === userId);
+    if (idx !== -1) {
+        if (confirm(`Are you sure you want to disable referral capabilities for ${users[idx].name}?`)) {
+            users[idx].referral_code = "DISABLED";
+            localStorage.setItem('referral_users', JSON.stringify(users));
+            showSlackToast(`Disabled referral capabilities for ${users[idx].name}`);
+            renderAdminReferralDashboard();
+        }
+    }
+}
+
+// Helper to push dynamic alerts into the dashboard system
+function dispatchNotificationAlert(title, text, icon = 'info') {
+    // Standard dispatch log simulation
+    const telemetryLogs = document.getElementById('liveTelemetryFeed');
+    if (telemetryLogs) {
+        const div = document.createElement('div');
+        div.className = "flex gap-3 text-xs bg-white/5 border border-white/10 rounded-xl p-3 items-start animate-fade-in";
+        div.innerHTML = `
+            <span class="material-symbols-outlined text-primary text-[18px] mt-0.5">${icon}</span>
+            <div>
+                <h4 class="font-bold text-white">${title}</h4>
+                <p class="text-on-surface-variant text-[10px] leading-relaxed mt-0.5">${text}</p>
+            </div>
+        `;
+        telemetryLogs.insertBefore(div, telemetryLogs.firstChild);
+    }
+}
+
+// ==========================================
+// 16. INTERACTIVE REFERRAL TUTORIAL SIMULATION
+// ==========================================
+function triggerReferralOnboardingDemo() {
+    showSlackToast("Starting referral simulation loop...");
+    
+    // Step 1: Pre-fill a new signup invite under our active code
+    const currentCode = document.getElementById('myReferralCodeText').innerText;
+    showSlackToast(`Step 1/4: Mock user registering with code: ${currentCode}`);
+
+    setTimeout(() => {
+        let referrals = JSON.parse(localStorage.getItem('referrals_list') || '[]');
+        const mockEmail = `invite_test_${Math.floor(100 + Math.random() * 900)}@enterprise.flow`;
+        
+        // Add new pending referral claim with high risk score trigger (SAME IP simulator)
+        const refId = 'ref_sim_loop';
+        referrals.push({
+            id: refId,
+            referrer_user_id: 'usr_admin',
+            referred_user_id: 'usr_sim_ref',
+            referred_name: 'Simulated User Node',
+            referred_email: mockEmail,
+            referral_code: currentCode,
+            status: 'Pending',
+            source: 'URL',
+            created_at: new Date().toISOString().split('T')[0],
+            reward: 'None'
+        });
+        localStorage.setItem('referrals_list', JSON.stringify(referrals));
+
+        // Add fraud flag
+        let fraudFlags = JSON.parse(localStorage.getItem('referral_fraud_flags_list') || '[]');
+        fraudFlags.push({
+            id: 'frd_sim_loop',
+            referral_id: refId,
+            risk_score: 0.85,
+            reasons: ['VPN_IP_DETECTED'],
+            review_status: 'Flagged'
+        });
+        localStorage.setItem('referral_fraud_flags_list', JSON.stringify(fraudFlags));
+
+        showSlackToast(`Step 2/4: Registration complete. Fraud scan flagged VPN trigger.`);
+        
+        // Switch to Admin view to review
+        setTimeout(() => {
+            switchTab('admin-referrals');
+            showSlackToast("Step 3/4: Auditor review dashboard loaded. Flagged record listed.");
+
+            // Simulated auto approval after 3 seconds
+            setTimeout(() => {
+                showSlackToast("Step 4/4: Simulating Admin override click 'Approve'...");
+                approveReferral(refId);
+                
+                // Clear simulated record to keep data clean
+                setTimeout(() => {
+                    let cleanedRefs = JSON.parse(localStorage.getItem('referrals_list') || '[]');
+                    cleanedRefs = cleanedRefs.filter(r => r.id !== refId);
+                    localStorage.setItem('referrals_list', JSON.stringify(cleanedRefs));
+                    
+                    switchTab('referral-program');
+                    showSlackToast("Simulation loop completed successfully. Check logs!");
+                }, 3000);
+            }, 3000);
+        }, 2000);
+    }, 2000);
 }
