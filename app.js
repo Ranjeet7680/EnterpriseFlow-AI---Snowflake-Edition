@@ -2273,6 +2273,12 @@ function loginWithGoogleFirebase() {
             const wsUser = document.getElementById('wsUserLabel');
             if (wsUser) wsUser.innerText = userName;
             
+            // Update user header profile avatar dynamically
+            if (user.photoURL) {
+                const avatar = document.getElementById('userHeaderAvatar');
+                if (avatar) avatar.src = user.photoURL;
+            }
+            
             // Dispatch Slack success toast
             showSlackToast(`Signed in as ${userName}`);
             
