@@ -2538,7 +2538,10 @@ function renderReferralDashboard() {
     document.getElementById('myReferralCodeText').innerText = code;
     
     // Dynamically build clean path parameter base to prevent Vercel routing 404s
-    const baseUrl = window.location.origin + window.location.pathname;
+    let baseUrl = window.location.origin + window.location.pathname;
+    if (baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1') || baseUrl.startsWith('file:')) {
+        baseUrl = 'https://enterprise-flow-ai-snowflake-edition.vercel.app/';
+    }
     document.getElementById('myReferralLinkInput').value = `${baseUrl}?ref=${code}`;
     
     document.getElementById('qrModalCodeLabel').innerText = code;
