@@ -2536,7 +2536,11 @@ function renderReferralDashboard() {
     
     // Update code labels
     document.getElementById('myReferralCodeText').innerText = code;
-    document.getElementById('myReferralLinkInput').value = `https://enterprise-flow-ai-snowflake-editio.vercel.app/signup?ref=${code}`;
+    
+    // Dynamically build clean path parameter base to prevent Vercel routing 404s
+    const baseUrl = window.location.origin + window.location.pathname;
+    document.getElementById('myReferralLinkInput').value = `${baseUrl}?ref=${code}`;
+    
     document.getElementById('qrModalCodeLabel').innerText = code;
 
     // Draw Mini QR
