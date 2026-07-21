@@ -48,8 +48,25 @@ const mockDatabase = {
         { DATE: '2026-07-04', PLAN: 'Enterprise', QUANTITY: 3, REVENUE: 14500 },
         { DATE: '2026-07-05', PLAN: 'Pro', QUANTITY: 12, REVENUE: 2400 },
         { DATE: '2026-07-05', PLAN: 'Enterprise', QUANTITY: 1, REVENUE: 5000 }
+    ],
+    'INVENTORY': [
+        { PRODUCT_ID: 'PRD-101', NAME: 'Wireless Headphones X1', STOCK: 14, SAFETY_THRESHOLD: 50, RISK: 'CRITICAL' },
+        { PRODUCT_ID: 'PRD-102', NAME: 'USB-C Fast Charger', STOCK: 240, SAFETY_THRESHOLD: 100, RISK: 'LOW' },
+        { PRODUCT_ID: 'PRD-103', NAME: 'Mechanical Keyboard RGB', STOCK: 85, SAFETY_THRESHOLD: 30, RISK: 'LOW' },
+        { PRODUCT_ID: 'PRD-104', NAME: 'Ergonomic Standing Desk', STOCK: 8, SAFETY_THRESHOLD: 15, RISK: 'MEDIUM' }
+    ],
+    'PURCHASE_ORDERS': [
+        { PO_ID: 'PO-991', SUPPLIER: 'Alternate Supplier B', ITEMS: 500, TOTAL_COST: '$12,40,000', STATUS: 'APPROVED' },
+        { PO_ID: 'PO-989', SUPPLIER: 'Global Logistics Corp', ITEMS: 120, TOTAL_COST: '$3,10,000', STATUS: 'COMPLETED' },
+        { PO_ID: 'PO-985', SUPPLIER: 'TechParts Direct', ITEMS: 250, TOTAL_COST: '$5,80,000', STATUS: 'COMPLETED' }
+    ],
+    'AUDIT_LOGS': [
+        { TIMESTAMP: '10:42:15', AGENT: 'Supervisor Agent', ACTION: 'Emergency Reorder Workflow', STATUS: 'PASS', SIGNATURE: 'SECURE_SIGN: ADM-991' },
+        { TIMESTAMP: '09:15:02', AGENT: 'Cortex Analyst', ACTION: 'Query Search Optimization', STATUS: 'PASS', SIGNATURE: 'SECURE_SIGN: SYS-042' },
+        { TIMESTAMP: '08:30:44', AGENT: 'Data Ingestion Node', ACTION: 'Inventory Stock Safety Sync', STATUS: 'PASS', SIGNATURE: 'SECURE_SIGN: DAT-119' }
     ]
 };
+
 
 // ==========================================
 // 2. SPLASH SCREEN LOADING REDIRECT
@@ -598,12 +615,12 @@ function initDraggableNodes() {
     updateNodeDOMBindings();
 }
 
+let pendingWireStartNode = null;
+
 function updateNodeDOMBindings() {
     const nodeElements = document.querySelectorAll('.canvas-node');
     nodeElements.forEach(nodeEl => {
-        // Drag starter handle (the node block body itself)
         nodeEl.addEventListener('mousedown', (e) => {
-            // Ignore if clicked on handles or configuration buttons
             if (e.target.classList.contains('connection-handle') || e.target.closest('button')) {
                 return;
             }
@@ -612,14 +629,40 @@ function updateNodeDOMBindings() {
             startNodeDrag(nodeId, e);
         });
 
-        // Click to open parameters settings drawer
         nodeEl.addEventListener('click', (e) => {
             if (e.target.classList.contains('connection-handle')) return;
             const nodeId = parseInt(nodeEl.getAttribute('data-node-id'));
             openNodeSettings(nodeId);
         });
+
+        // Wire handle click listener
+        const handles = nodeEl.querySelectorAll('.connection-handle');
+        handles.forEach(handle => {
+            handle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const nodeId = parseInt(nodeEl.getAttribute('data-node-id'));
+                const isOutput = handle.classList.contains('connection-handle-right');
+                
+                if (isOutput) {
+                    pendingWireStartNode = nodeId;
+                    document.querySelectorAll('.connection-handle').forEach(h => h.classList.remove('glow-pulse'));
+                    handle.classList.add('glow-pulse');
+                    showSlackToast(`Output handle selected on Node #${nodeId}. Click an input handle on another node to wire connection.`);
+                } else if (pendingWireStartNode && pendingWireStartNode !== nodeId) {
+                    const exists = connections.some(c => c.from === pendingWireStartNode && c.to === nodeId);
+                    if (!exists) {
+                        connections.push({ from: pendingWireStartNode, to: nodeId });
+                        drawConnections();
+                        showSlackToast(`Wired Node #${pendingWireStartNode} ➔ Node #${nodeId} successfully!`);
+                    }
+                    document.querySelectorAll('.connection-handle').forEach(h => h.classList.remove('glow-pulse'));
+                    pendingWireStartNode = null;
+                }
+            });
+        });
     });
 }
+
 
 function startNodeDrag(nodeId, e) {
     const nodeEl = document.querySelector(`.canvas-node[data-node-id="${nodeId}"]`);
@@ -878,7 +921,6 @@ function createNewWorkflow() {
 function autoOptimizeNodes() {
     alert('Optimizing pipeline: Reordering and aligning node elements for 24% faster Snowflake Cortex execution.');
     
-    // Sort nodes horizontally in chain sequence
     let currentX = 100;
     nodes.forEach(node => {
         node.y = 180;
@@ -890,7 +932,6 @@ function autoOptimizeNodes() {
             el.style.top = `${node.y}px`;
         }
         
-        // Cortex logic offsets
         if (node.type === 'logic' && node.subtype === 'Cortex Analyst') {
             node.y = 155;
             if (el) el.style.top = `${node.y}px`;
@@ -901,6 +942,162 @@ function autoOptimizeNodes() {
     
     drawConnections();
 }
+
+function exportWorkflowJSON() {
+    const workflowData = {
+        name: 'Snowflake-to-Slack Lead Gen Pipeline',
+        exportedAt: new Date().toISOString(),
+        nodes: nodes,
+        connections: connections
+    };
+    const jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(workflowData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", jsonStr);
+    downloadAnchor.setAttribute("download", `enterprise_flow_pipeline_${Date.now()}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    showSlackToast("Workflow exported to JSON file successfully!");
+}
+
+function importWorkflowJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (data.nodes && Array.isArray(data.nodes)) {
+                nodes = data.nodes;
+                connections = data.connections || [];
+                renderAllNodesFromState();
+                drawConnections();
+                showSlackToast(`Successfully imported ${nodes.length} nodes into visual builder canvas!`);
+            } else {
+                alert('Invalid JSON workflow file format.');
+            }
+        } catch(err) {
+            alert('Failed to parse JSON file: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+function renderAllNodesFromState() {
+    const container = document.getElementById('nodesContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    nodes.forEach(node => {
+        let colorClass = 'text-primary';
+        let bgClass = 'bg-primary/10';
+        let borderHover = 'hover:border-primary/45';
+        let icon = node.icon || 'bolt';
+        
+        if (node.type === 'action') { colorClass = 'text-secondary'; bgClass = 'bg-secondary/10'; borderHover = 'hover:border-secondary/45'; icon = node.icon || 'database'; }
+        else if (node.type === 'logic') { colorClass = 'text-tertiary-container'; bgClass = 'bg-tertiary-container/10'; borderHover = 'hover:border-tertiary-container/45'; icon = node.icon || 'psychology'; }
+        else if (node.type === 'notification') { colorClass = 'text-error'; bgClass = 'bg-error/10'; borderHover = 'hover:border-error/45'; icon = node.icon || 'send'; }
+        
+        const nodeEl = document.createElement('div');
+        nodeEl.className = `canvas-node absolute bg-surface-container/85 glass-panel rounded-2xl p-4 w-48 shadow-lg border border-white/10 ${borderHover} transition-colors group`;
+        nodeEl.style.left = `${node.x}px`;
+        nodeEl.style.top = `${node.y}px`;
+        nodeEl.setAttribute('data-node-id', node.id);
+        nodeEl.setAttribute('data-node-type', node.type);
+        
+        nodeEl.innerHTML = `
+            <div class="connection-handle connection-handle-left" data-handle-type="input"></div>
+            <div class="connection-handle connection-handle-right" data-handle-type="output"></div>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl ${bgClass} flex items-center justify-center ${colorClass} shrink-0">
+                    <span class="material-symbols-outlined text-[20px]">${icon}</span>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-white node-name-label">${node.name}</h4>
+                    <p class="text-[9px] text-on-surface-variant mt-0.5">${node.subtype || ''}</p>
+                </div>
+            </div>
+        `;
+        container.appendChild(nodeEl);
+    });
+    
+    updateNodeDOMBindings();
+}
+
+function openAddNodeModal() {
+    const modal = document.getElementById('addNodeModal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function closeAddNodeModal() {
+    const modal = document.getElementById('addNodeModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function submitCreateNewNode() {
+    const titleInput = document.getElementById('newNodeTitleInput')?.value.trim() || 'Custom Pipeline Block';
+    const category = document.getElementById('newNodeCategorySelect')?.value || 'Action';
+    const icon = document.getElementById('newNodeIconInput')?.value.trim() || 'bolt';
+    const subtitle = document.getElementById('newNodeSubtitleInput')?.value.trim() || 'Custom Operation Node';
+    
+    closeAddNodeModal();
+    
+    const type = category.toLowerCase();
+    const canvas = document.getElementById('workflowCanvas');
+    const scrollLeft = canvas ? canvas.scrollLeft : 0;
+    const scrollTop = canvas ? canvas.scrollTop : 0;
+    
+    const id = nodes.length > 0 ? Math.max(...nodes.map(n => n.id)) + 1 : 1;
+    let colorClass = 'text-primary';
+    let bgClass = 'bg-primary/10';
+    let borderHover = 'hover:border-primary/45';
+    
+    if (type === 'action') { colorClass = 'text-secondary'; bgClass = 'bg-secondary/10'; borderHover = 'hover:border-secondary/45'; }
+    else if (type === 'logic') { colorClass = 'text-tertiary-container'; bgClass = 'bg-tertiary-container/10'; borderHover = 'hover:border-tertiary-container/45'; }
+    else if (type === 'notification') { colorClass = 'text-error'; bgClass = 'bg-error/10'; borderHover = 'hover:border-error/45'; }
+    
+    const x = 250 + scrollLeft + ((nodes.length * 30) % 300);
+    const y = 180 + scrollTop + ((nodes.length * 40) % 250);
+    
+    const newNode = { id, name: titleInput, type, subtype: subtitle, x, y, icon, params: { custom: true } };
+    nodes.push(newNode);
+    
+    const container = document.getElementById('nodesContainer');
+    if (container) {
+        const nodeEl = document.createElement('div');
+        nodeEl.className = `canvas-node absolute bg-surface-container/85 glass-panel rounded-2xl p-4 w-48 shadow-lg border border-white/10 ${borderHover} transition-colors group`;
+        nodeEl.style.left = `${x}px`;
+        nodeEl.style.top = `${y}px`;
+        nodeEl.setAttribute('data-node-id', id);
+        nodeEl.setAttribute('data-node-type', type);
+        
+        nodeEl.innerHTML = `
+            <div class="connection-handle connection-handle-left" data-handle-type="input"></div>
+            <div class="connection-handle connection-handle-right" data-handle-type="output"></div>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl ${bgClass} flex items-center justify-center ${colorClass} shrink-0">
+                    <span class="material-symbols-outlined text-[20px]">${icon}</span>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-white node-name-label">${titleInput}</h4>
+                    <p class="text-[9px] text-on-surface-variant mt-0.5">${subtitle}</p>
+                </div>
+            </div>
+        `;
+        container.appendChild(nodeEl);
+    }
+    
+    if (nodes.length > 1) {
+        const prevNode = nodes[nodes.length - 2];
+        connections.push({ from: prevNode.id, to: id });
+    }
+    
+    updateNodeDOMBindings();
+    drawConnections();
+    showSlackToast(`Node "${titleInput}" created & added to workflow canvas.`);
+}
+
 
 // ==========================================
 // 5. CONFIGURATION DRAWER LOGIC
@@ -1048,17 +1245,58 @@ function loadTableSchema(tableName) {
     }
 }
 
+let lastSQLQueryResultData = null;
+
+function exportSQLResultsCSV() {
+    if (!lastSQLQueryResultData || !lastSQLQueryResultData.length) {
+        alert('No tabular query data available to export.');
+        return;
+    }
+    const headers = Object.keys(lastSQLQueryResultData[0]);
+    const csvRows = [headers.join(',')];
+    lastSQLQueryResultData.forEach(row => {
+        const values = headers.map(h => {
+            const val = String(row[h]).replace(/"/g, '""');
+            return `"${val}"`;
+        });
+        csvRows.push(values.join(','));
+    });
+    const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(csvRows.join("\n"));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", csvContent);
+    downloadAnchor.setAttribute("download", `snowflake_export_${Date.now()}.csv`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    showSlackToast("Exported SQL query results to CSV successfully!");
+}
+
+function exportSQLResultsJSON() {
+    if (!lastSQLQueryResultData || !lastSQLQueryResultData.length) {
+        alert('No tabular query data available to export.');
+        return;
+    }
+    const jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(lastSQLQueryResultData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", jsonStr);
+    downloadAnchor.setAttribute("download", `snowflake_export_${Date.now()}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    showSlackToast("Exported SQL query results to JSON successfully!");
+}
+
 function executeSQLQuery() {
     const sql = document.getElementById('sqlConsoleInput').value.trim();
     const meta = document.getElementById('sqlExecutionMeta');
     const container = document.getElementById('sqlResultContainer');
-    const whInput = document.getElementById('dbWarehouseInput').value || 'COMPUTE_WH';
-    const dbInput = document.getElementById('dbNameInput').value || 'PROD_LEADS_DB';
-    const scInput = document.getElementById('dbSchemaInput').value || 'PUBLIC';
+    const exportBtnBox = document.getElementById('sqlExportButtons');
+    const whInput = document.getElementById('dbWarehouseInput')?.value || 'COMPUTE_WH';
     
     if (!sql) return;
     
     if (meta) meta.innerText = `Executing query on [${whInput}]...`;
+    if (exportBtnBox) exportBtnBox.classList.add('hidden');
     
     // Simulate loading state
     if (container) {
@@ -1070,7 +1308,6 @@ function executeSQLQuery() {
         `;
     }
 
-    // Delay to simulate query runner compiler execution
     const executionDelay = 300 + Math.random() * 400;
     
     setTimeout(() => {
@@ -1080,6 +1317,9 @@ function executeSQLQuery() {
         if (normalizedSql.includes('LEADS')) matchedTable = 'LEADS';
         else if (normalizedSql.includes('SESSIONS')) matchedTable = 'SESSIONS';
         else if (normalizedSql.includes('SIGNUPS')) matchedTable = 'SIGNUPS';
+        else if (normalizedSql.includes('INVENTORY')) matchedTable = 'INVENTORY';
+        else if (normalizedSql.includes('PURCHASE')) matchedTable = 'PURCHASE_ORDERS';
+        else if (normalizedSql.includes('AUDIT')) matchedTable = 'AUDIT_LOGS';
         
         if (meta) {
             const timeVal = (executionDelay / 1000).toFixed(2);
@@ -1088,9 +1328,11 @@ function executeSQLQuery() {
 
         if (matchedTable && mockDatabase[matchedTable]) {
             const data = mockDatabase[matchedTable];
+            lastSQLQueryResultData = data;
+            if (exportBtnBox) exportBtnBox.classList.remove('hidden');
+            
             const headers = Object.keys(data[0]);
             
-            // Build visual table representation
             let tableHTML = `
                 <div class="overflow-x-auto border border-white/10 rounded-xl bg-surface-container-lowest/50">
                     <table class="w-full text-left border-collapse text-xs">
@@ -1112,9 +1354,10 @@ function executeSQLQuery() {
                 tableHTML += `<tr class="hover:bg-white/5 transition-colors">`;
                 headers.forEach(h => {
                     let cellVal = row[h];
-                    // Format confidence percent
                     if (h === 'LEAD_CONFIDENCE') {
                         cellVal = `<span class="text-primary font-bold">${Math.round(cellVal * 100)}%</span>`;
+                    } else if (h === 'RISK' && cellVal === 'CRITICAL') {
+                        cellVal = `<span class="text-error font-bold">${cellVal}</span>`;
                     }
                     tableHTML += `<td class="py-3 px-4">${cellVal}</td>`;
                 });
@@ -1129,13 +1372,14 @@ function executeSQLQuery() {
             
             container.innerHTML = tableHTML;
         } else {
-            // General query execution report for non-matched statements
+            lastSQLQueryResultData = null;
+            if (exportBtnBox) exportBtnBox.classList.add('hidden');
             container.innerHTML = `
                 <div class="p-5 border border-primary/20 bg-primary/5 rounded-2xl flex gap-3 text-xs">
                     <span class="material-symbols-outlined text-primary text-[20px] shrink-0">check_circle</span>
                     <div>
                         <h4 class="font-bold text-white">Statement Executed Successfully</h4>
-                        <p class="text-on-surface-variant mt-1.5 leading-relaxed">Affected rows: 0. Warehouse [${whInput}] did not output tabular results for this query because it might be a credentials checker, stage creation, or table initialization command. Schema mapping matches public access rules.</p>
+                        <p class="text-on-surface-variant mt-1.5 leading-relaxed">Affected rows: 0. Warehouse [${whInput}] executed statement successfully. Schema public access validated.</p>
                         <pre class="bg-background/80 text-[11px] p-3 rounded-lg mt-3 text-secondary overflow-x-auto font-code-sm border border-white/5">${sql}</pre>
                     </div>
                 </div>
@@ -1143,6 +1387,7 @@ function executeSQLQuery() {
         }
     }, executionDelay);
 }
+
 
 // ==========================================
 // 7. CORTEX AI INTERACTIVE CHAT ENGINE
@@ -1203,11 +1448,31 @@ function sendChatMessage() {
         const normText = userText.toLowerCase();
 
         if (normText.includes('optimize') && normText.includes('query')) {
+            const sqlQuery = "SELECT ID, NAME, VALUE, LEAD_CONFIDENCE FROM PUBLIC.LEADS WHERE LEAD_CONFIDENCE > 0.85 ORDER BY LEAD_CONFIDENCE DESC LIMIT 5;";
             responseHTML = `
                 <p class="text-xs text-white leading-relaxed">Analyzing Snowflake query parameters in node #2...<br/>
                 Recommendation: To speed up read times on the <strong>PROD_LEADS_DB.PUBLIC.LEADS</strong> table, utilize a search index optimization and filter using the indexed <code>LEAD_CONFIDENCE</code> attribute. Here is the optimized query:
-                <pre class="bg-background/80 text-[10px] p-3 rounded-lg mt-3 text-primary border border-white/5 font-code-sm">SELECT ID, NAME, VALUE, LEAD_CONFIDENCE \nFROM PUBLIC.LEADS \nWHERE LEAD_CONFIDENCE > 0.85 \nORDER BY LEAD_CONFIDENCE DESC \nLIMIT 5;</pre>
-                <button class="bg-primary/10 text-primary border border-primary/20 px-3 py-1 mt-3 rounded-lg text-[10px] font-bold hover:bg-primary/20 transition-all" onclick="applyOptimizedQuery()">Apply to Node #2</button>
+                <pre class="bg-background/80 text-[10px] p-3 rounded-lg mt-3 text-primary border border-white/5 font-code-sm">${sqlQuery}</pre>
+                <div class="flex gap-2 mt-3">
+                    <button class="bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-lg text-[10px] font-bold hover:bg-primary/20 transition-all flex items-center gap-1" onclick="applyOptimizedQuery()">
+                        <span class="material-symbols-outlined text-[14px]">auto_fix_high</span> Apply to Node #2
+                    </button>
+                    <button class="bg-secondary/10 text-secondary border border-secondary/20 px-3 py-1 rounded-lg text-[10px] font-bold hover:bg-secondary/20 transition-all flex items-center gap-1" onclick="runGeneratedSQLQuery('${sqlQuery}')">
+                        <span class="material-symbols-outlined text-[14px]">terminal</span> Run in SQL Console
+                    </button>
+                </div>
+                </p>
+            `;
+        } else if (normText.includes('inventory') || normText.includes('stock')) {
+            const sqlQuery = "SELECT * FROM INVENTORY WHERE RISK = 'CRITICAL';";
+            responseHTML = `
+                <p class="text-xs text-white leading-relaxed">Querying inventory stock risk profile across Cortex AI warehouses...<br/>
+                Discovered 1 critical stockout risk on item <strong>PRD-101 (Wireless Headphones X1)</strong>.<br/>
+                Suggested query to inspect details:
+                <pre class="bg-background/80 text-[10px] p-3 rounded-lg mt-3 text-primary border border-white/5 font-code-sm">${sqlQuery}</pre>
+                <button class="bg-secondary/10 text-secondary border border-secondary/20 px-3 py-1 mt-3 rounded-lg text-[10px] font-bold hover:bg-secondary/20 transition-all flex items-center gap-1" onclick="runGeneratedSQLQuery('${sqlQuery}')">
+                    <span class="material-symbols-outlined text-[14px]">terminal</span> Run in SQL Console
+                </button>
                 </p>
             `;
         } else if (normText.includes('webhook') || normText.includes('slack')) {
@@ -1218,8 +1483,15 @@ function sendChatMessage() {
                 </p>
             `;
         } else {
+            const sqlQuery = "SELECT * FROM LEADS ORDER BY LEAD_CONFIDENCE DESC LIMIT 5;";
             responseHTML = `
-                <p class="text-xs text-white leading-relaxed">Cortex Analyst query executed. Connected to warehouse <strong>COMPUTE_WH</strong>. I verified that your database holds schemas mapping leads telemetry records. If you need me to compile dynamic pipelines or run a query count, please specify.</p>
+                <p class="text-xs text-white leading-relaxed">Cortex Analyst query executed. Connected to warehouse <strong>COMPUTE_WH</strong>. I verified that your database holds schemas mapping leads & telemetry records.<br/>
+                Sample query for active leads:
+                <pre class="bg-background/80 text-[10px] p-3 rounded-lg mt-3 text-primary border border-white/5 font-code-sm">${sqlQuery}</pre>
+                <button class="bg-secondary/10 text-secondary border border-secondary/20 px-3 py-1 mt-3 rounded-lg text-[10px] font-bold hover:bg-secondary/20 transition-all flex items-center gap-1" onclick="runGeneratedSQLQuery('${sqlQuery}')">
+                    <span class="material-symbols-outlined text-[14px]">terminal</span> Run in SQL Console
+                </button>
+                </p>
             `;
         }
         
@@ -1243,6 +1515,17 @@ function applyOptimizedQuery() {
         alert('Optimized query applied to Node #2 (Read Snowflake) successfully.');
     }
 }
+
+function runGeneratedSQLQuery(sql) {
+    switchTab('snowflake-explorer');
+    const input = document.getElementById('sqlConsoleInput');
+    if (input) {
+        input.value = sql;
+        executeSQLQuery();
+        showSlackToast("Query loaded & executing in Snowflake Console!");
+    }
+}
+
 
 // ==========================================
 // 8. LOGS SIMULATOR & TELEMETRY STREAM
@@ -1457,8 +1740,11 @@ function toggleInterfaceTheme() {
 }
 
 // ==========================================
-// 10. VOICE AI MIC WAVE VISUALIZER
 // ==========================================
+// 10. VOICE AI MIC WAVE VISUALIZER & WEB SPEECH ENGINE
+// ==========================================
+let speechRecognitionInstance = null;
+
 function toggleVoiceAI() {
     isVoiceActive = !isVoiceActive;
     
@@ -1467,20 +1753,53 @@ function toggleVoiceAI() {
     const label = btn?.querySelector('span:nth-child(2)');
     
     if (isVoiceActive) {
-        btn.classList.add('text-primary');
-        btn.classList.remove('text-secondary');
-        wave.classList.remove('hidden');
-        wave.classList.add('flex');
+        btn?.classList.add('text-primary');
+        btn?.classList.remove('text-secondary');
+        wave?.classList.remove('hidden');
+        wave?.classList.add('flex');
         if (label) label.innerText = 'Voice AI Listening...';
         
-        // Start Waveform jump animation loop
         animateVoiceBars();
+        
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            try {
+                speechRecognitionInstance = new SpeechRecognition();
+                speechRecognitionInstance.continuous = false;
+                speechRecognitionInstance.interimResults = false;
+                speechRecognitionInstance.lang = 'en-US';
+                
+                speechRecognitionInstance.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    showSlackToast(`Voice Command Recognized: "${transcript}"`);
+                    speakVoiceResponse(`Recognized command: ${transcript}`);
+                    processVoiceCommand(transcript);
+                    if (isVoiceActive) toggleVoiceAI();
+                };
+                
+                speechRecognitionInstance.onerror = (err) => {
+                    console.log('Speech recognition event:', err);
+                };
+                
+                speechRecognitionInstance.start();
+            } catch(e) {
+                console.log('Speech recognition init error:', e);
+            }
+        } else {
+            showSlackToast("Voice AI active! Speak commands like 'run simulation' or 'open sql'.");
+            speakVoiceResponse("Voice AI active. How can I assist you with Snowflake operations today?");
+        }
     } else {
-        btn.classList.remove('text-primary');
-        btn.classList.add('text-secondary');
-        wave.classList.add('hidden');
-        wave.classList.remove('flex');
+        btn?.classList.remove('text-primary');
+        btn?.classList.add('text-secondary');
+        wave?.classList.add('hidden');
+        wave?.classList.remove('flex');
         if (label) label.innerText = 'Voice AI Helper';
+        
+        if (speechRecognitionInstance) {
+            try { speechRecognitionInstance.stop(); } catch(e) {}
+            speechRecognitionInstance = null;
+        }
         
         if (voiceAnimationId) {
             cancelAnimationFrame(voiceAnimationId);
@@ -1489,10 +1808,56 @@ function toggleVoiceAI() {
     }
 }
 
+function processVoiceCommand(cmd) {
+    const text = cmd.toLowerCase();
+    if (text.includes('run') || text.includes('start') || text.includes('simulation') || text.includes('pipeline')) {
+        switchTab('workflows');
+        setTimeout(() => startEndToEndSimulation(), 500);
+        speakVoiceResponse("Starting end to end pipeline simulation");
+    } else if (text.includes('sql') || text.includes('query') || text.includes('snowflake') || text.includes('console')) {
+        switchTab('snowflake-explorer');
+        speakVoiceResponse("Opening Snowflake Console");
+    } else if (text.includes('chat') || text.includes('ask') || text.includes('cortex') || text.includes('ai')) {
+        switchTab('cortex-chat');
+        const input = document.getElementById('aiChatInput');
+        if (input) {
+            input.value = cmd;
+            sendChatMessage();
+        }
+        speakVoiceResponse("Sending your query to Cortex AI Chat Assistant");
+    } else if (text.includes('dashboard') || text.includes('overview') || text.includes('metrics')) {
+        switchTab('dashboard');
+        speakVoiceResponse("Switching to Operations Control Room");
+    } else if (text.includes('optimize') || text.includes('align')) {
+        switchTab('workflows');
+        autoOptimizeNodes();
+        speakVoiceResponse("Optimizing visual workflow nodes");
+    } else {
+        switchTab('cortex-chat');
+        const input = document.getElementById('aiChatInput');
+        if (input) {
+            input.value = cmd;
+            sendChatMessage();
+        }
+    }
+}
+
+function speakVoiceResponse(message) {
+    if ('speechSynthesis' in window) {
+        try {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(message);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+        } catch(e) {}
+    }
+}
+
 function animateVoiceBars() {
     const bars = document.querySelectorAll('.voice-wave-bar');
     bars.forEach(bar => {
-        const height = Math.floor(Math.random() * 16) + 4; // Between 4px and 20px
+        const height = Math.floor(Math.random() * 16) + 4;
         bar.style.height = `${height}px`;
     });
     
@@ -1500,6 +1865,7 @@ function animateVoiceBars() {
         voiceAnimationId = requestAnimationFrame(animateVoiceBars);
     }
 }
+
 
 // ==========================================
 // 11. END-TO-END PIPELINE SIMULATOR

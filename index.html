@@ -1437,11 +1437,25 @@
                                 <span class="material-symbols-outlined text-[16px]">play_arrow</span>
                                 Run Pipeline
                             </button>
+                            <button class="bg-surface-container border border-white/10 text-on-surface-variant hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all" onclick="openAddNodeModal()">
+                                <span class="material-symbols-outlined text-[16px]">add_box</span>
+                                Add Node
+                            </button>
+                            <button class="bg-surface-container border border-white/10 text-on-surface-variant hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all" onclick="exportWorkflowJSON()">
+                                <span class="material-symbols-outlined text-[16px]">download</span>
+                                Export JSON
+                            </button>
+                            <label class="bg-surface-container border border-white/10 text-on-surface-variant hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer">
+                                <span class="material-symbols-outlined text-[16px]">upload</span>
+                                Import JSON
+                                <input type="file" id="importJsonInput" accept=".json" class="hidden" onchange="importWorkflowJSON(event)">
+                            </label>
                             <button class="bg-surface-container border border-white/10 text-on-surface-variant hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all" onclick="autoOptimizeNodes()">
                                 <span class="material-symbols-outlined text-[16px]">auto_fix_high</span>
                                 Auto-Align
                             </button>
                         </div>
+
                     </div>
                     <!-- Canvas Grid Layer -->
                     <div class="absolute inset-0 canvas-grid opacity-30"></div>
@@ -1991,7 +2005,17 @@
                     <!-- SQL Result Console -->
                     <div class="flex-1 flex flex-col overflow-hidden bg-background/25">
                         <div class="p-4 border-b border-white/5 flex justify-between items-center shrink-0 text-xs">
-                            <span class="font-bold text-white">Execution Result</span>
+                            <div class="flex items-center gap-3">
+                                <span class="font-bold text-white">Execution Result</span>
+                                <div id="sqlExportButtons" class="hidden flex items-center gap-2">
+                                    <button class="bg-surface-container border border-white/10 text-on-surface-variant hover:text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition-all" onclick="exportSQLResultsCSV()">
+                                        <span class="material-symbols-outlined text-[14px]">download</span> Export CSV
+                                    </button>
+                                    <button class="bg-surface-container border border-white/10 text-on-surface-variant hover:text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition-all" onclick="exportSQLResultsJSON()">
+                                        <span class="material-symbols-outlined text-[14px]">data_object</span> Export JSON
+                                    </button>
+                                </div>
+                            </div>
                             <span id="sqlExecutionMeta" class="text-on-surface-variant font-code-sm">Time elapsed: 0.0s | Status: Ready</span>
                         </div>
                         
@@ -3757,8 +3781,55 @@
                 <button class="flex-1 bg-primary text-on-secondary font-bold py-2.5 rounded-xl text-xs active:scale-[0.98] transition-all" onclick="submitPipelineGateApproval(true)">Approve & Dispatch</button>
                 <button class="flex-1 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold py-2.5 rounded-xl text-xs active:scale-[0.98] transition-all" onclick="submitPipelineGateApproval(false)">Reject Pipeline</button>
             </div>
+    </div>
+
+    <!-- Add Node Modal -->
+    <div id="addNodeModal" class="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-sm flex items-center justify-center hidden transition-all duration-300">
+        <div class="glass-panel-heavy rounded-2xl w-full max-w-md p-6 border border-primary/20 shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto select-none">
+            <div class="flex justify-between items-center text-primary">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[24px]">add_box</span>
+                    <h3 class="text-sm font-bold text-white uppercase tracking-wider">Add Workflow Node</h3>
+                </div>
+                <button class="text-on-surface-variant hover:text-white" onclick="closeAddNodeModal()">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            
+            <div class="space-y-4 text-xs">
+                <div>
+                    <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Node Title</label>
+                    <input type="text" id="newNodeTitleInput" placeholder="e.g. Filter High Value Leads" class="w-full bg-background border border-white/10 rounded-xl px-4 py-2 text-white focus:border-primary focus:outline-none font-sans" />
+                </div>
+                
+                <div>
+                    <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Category</label>
+                    <select id="newNodeCategorySelect" class="w-full bg-background border border-white/10 rounded-xl px-4 py-2 text-white focus:border-primary focus:outline-none">
+                        <option value="Trigger">Trigger (Start Event)</option>
+                        <option value="Action">Action (Snowflake / Processing)</option>
+                        <option value="Logic">Logic (Condition / Gate)</option>
+                        <option value="Notification">Notification (Slack / Email)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Material Icon Name</label>
+                    <input type="text" id="newNodeIconInput" placeholder="e.g. filter_alt, bolt, database, send" value="bolt" class="w-full bg-background border border-white/10 rounded-xl px-4 py-2 text-white focus:border-primary focus:outline-none font-mono text-[11px]" />
+                </div>
+                
+                <div>
+                    <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Subtitle Description</label>
+                    <input type="text" id="newNodeSubtitleInput" placeholder="e.g. Filters output where confidence > 0.8" class="w-full bg-background border border-white/10 rounded-xl px-4 py-2 text-white focus:border-primary focus:outline-none font-sans" />
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-2">
+                <button class="flex-1 bg-primary text-on-secondary font-bold py-2.5 rounded-xl text-xs active:scale-[0.98] transition-all" onclick="submitCreateNewNode()">Create Node</button>
+                <button class="flex-1 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold py-2.5 rounded-xl text-xs active:scale-[0.98] transition-all" onclick="closeAddNodeModal()">Cancel</button>
+            </div>
         </div>
     </div>
+
 
     <!-- Universal Command Palette (Ctrl+K) -->
     <div id="commandPaletteModal" class="fixed inset-0 z-[10000] hidden flex items-start justify-center pt-[15vh] px-4" onclick="closeCommandPaletteOutside(event)">
