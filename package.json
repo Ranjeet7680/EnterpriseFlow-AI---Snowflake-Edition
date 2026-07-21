@@ -1,0 +1,23 @@
+{
+  "name": "snak-hack",
+  "version": "1.0.0",
+  "description": "EnterpriseFlow AI is a high-performance, single-page operations dashboard and visual agent workflow builder designed specifically for orchestrating Snowflake database clusters and Cortex AI pipelines.",
+  "scripts": {
+    "build": "mkdir -p public && cp index.html mobile.html app.js app.css public/ || true"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ranjeet7680/EnterpriseFlow-AI---Snowflake-Edition.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Ranjeet7680/EnterpriseFlow-AI---Snowflake-Edition/issues"
+  },
+  "homepage": "https://github.com/Ranjeet7680/EnterpriseFlow-AI---Snowflake-Edition#readme",
+  "dependencies": {
+    "@vercel/edge-config": "^1.4.3"
+  }
+}
