@@ -1166,6 +1166,11 @@
         <!-- 3. MAIN WORKSPACE CONTENT CONTAINER -->
         <!-- ========================================== -->
         <main id="mainContent" class="ml-64 mt-16 h-[calc(100vh-7rem)] flex relative bg-surface-dim overflow-hidden transition-all duration-300">
+            <!-- Ambient Glowing Background Orbs -->
+            <div class="pointer-events-none absolute inset-0 overflow-hidden z-0">
+                <div class="ambient-orb-1 absolute top-10 right-10 w-96 h-96 rounded-full bg-primary/10 blur-[120px]"></div>
+                <div class="ambient-orb-2 absolute bottom-20 left-20 w-[30rem] h-[30rem] rounded-full bg-secondary/10 blur-[150px]"></div>
+            </div>
             
             <!-- Welcome View has been moved to root level as a standalone screen -->
 

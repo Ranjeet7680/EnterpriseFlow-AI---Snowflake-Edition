@@ -538,6 +538,9 @@ function switchTab(tabId) {
     
     if (activeEl) {
         activeEl.classList.remove('hidden-view');
+        activeEl.classList.remove('page-enter-anim');
+        void activeEl.offsetWidth; // Force reflow for animation restart
+        activeEl.classList.add('page-enter-anim');
     }
     
     // Manage sidebar visibility and offsets for Welcome view vs others
