@@ -528,3 +528,74 @@ main, footer {
     background-color: rgba(255, 255, 255, 0.04) !important;
 }
 
+/* ==========================================
+   VISUAL BUILDER, DATA QUALITY & QUERY STUDIO SIMULATOR STYLES
+   ========================================== */
+
+/* 1. Canvas Flow Particles */
+@keyframes particlePulse {
+    0% { r: 3; opacity: 0.3; }
+    50% { r: 6; opacity: 1; filter: drop-shadow(0 0 6px #70ffe0); }
+    100% { r: 3; opacity: 0.3; }
+}
+.flow-particle {
+    fill: #70ffe0;
+    animation: particlePulse 1.2s infinite ease-in-out;
+}
+
+/* 2. Active Node Execution Glow States */
+.node-executing {
+    border-color: #00e5c3 !important;
+    box-shadow: 0 0 25px rgba(0, 229, 195, 0.5), inset 0 0 15px rgba(0, 229, 195, 0.2) !important;
+    transform: scale(1.03);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.node-passed {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3) !important;
+}
+.node-gate {
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.5) !important;
+    animation: gatePulse 1.5s infinite alternate;
+}
+@keyframes gatePulse {
+    0% { box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
+    100% { box-shadow: 0 0 30px rgba(245, 158, 11, 0.8); }
+}
+
+/* 3. Visual Execution Plan DAG Nodes in Query Studio */
+.dag-node {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 10px 14px;
+    transition: all 0.25s ease;
+}
+.dag-node:hover {
+    border-color: #00e5c3;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -5px rgba(0, 229, 195, 0.3);
+}
+
+/* 4. Data Quality Score Ring Animation */
+@keyframes dqRingProgress {
+    from { stroke-dashoffset: 283; }
+    to { stroke-dashoffset: 14; }
+}
+.dq-score-ring {
+    stroke-dasharray: 283;
+    stroke-dashoffset: 14;
+    animation: dqRingProgress 2s ease-out forwards;
+}
+
+/* 5. Master Simulator Header Floating Bar */
+.simulator-top-bar {
+    background: rgba(11, 15, 16, 0.85);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 229, 195, 0.25);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 229, 195, 0.15);
+}
+
+

@@ -3565,43 +3565,501 @@
             </section>
 
             <!-- 3Z. DATA QUALITY TAB VIEW -->
-            <section id="view-data-quality" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view">
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary text-[24px]">verified</span>
-                        Data Quality Profiles
-                    </h1>
-                    <p class="text-xs text-on-surface-variant mt-1">Monitor validation test rules and null values profiles across Snowflake schemas.</p>
+            <section id="view-data-quality" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view relative">
+                <!-- Header Title & Control Bar -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[28px]">verified</span>
+                            Data Quality & Observability Suite
+                        </h1>
+                        <p class="text-xs text-on-surface-variant mt-1">Real-time schema validation, automated rules, SLA monitoring, and Cortex AI anomaly remediation.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button class="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2" onclick="runAllDQValidationTests()">
+                            <span class="material-symbols-outlined text-[16px]">published_with_changes</span>
+                            Run All Rules Test
+                        </button>
+                        <button class="bg-surface-container border border-white/10 hover:border-white/30 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2" onclick="openAddDQRuleModal()">
+                            <span class="material-symbols-outlined text-[16px]">add_circle</span>
+                            Add Rule
+                        </button>
+                        <button class="bg-surface-container border border-white/10 text-on-surface-variant hover:text-white px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all" onclick="switchTab('workflows')">
+                            <span class="material-symbols-outlined text-[16px]">account_tree</span>
+                            Visual Builder
+                        </button>
+                    </div>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 select-none">
-                    <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between h-40">
-                        <div>
-                            <span class="text-[8px] font-mono text-primary uppercase">Profile: ORDERS</span>
-                            <h3 class="text-sm font-bold text-white mt-1">Null Check Validations</h3>
-                            <p class="text-[10px] text-on-surface-variant mt-1">Checks all transaction indexes are non-null.</p>
+
+                <!-- Data Quality Top KPI Overview Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <!-- Health Score Gauge -->
+                    <div class="glass-panel p-4 rounded-2xl border border-white/10 flex items-center gap-4 bg-gradient-to-br from-primary/5 to-transparent">
+                        <div class="relative w-16 h-16 flex items-center justify-center shrink-0">
+                            <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" stroke="rgba(255,255,255,0.1)" stroke-width="8" fill="none"></circle>
+                                <circle cx="50" cy="50" r="45" stroke="#00e5c3" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="14" fill="none" class="dq-score-ring"></circle>
+                            </svg>
+                            <span id="dqOverallScoreText" class="absolute text-sm font-extrabold text-white">98.4%</span>
                         </div>
-                        <span class="text-primary font-bold text-xs">PASSING (100% Valid)</span>
+                        <div>
+                            <span class="text-[10px] font-mono text-primary uppercase tracking-wider">Overall Health</span>
+                            <h3 class="text-sm font-bold text-white mt-0.5">Data Quality Score</h3>
+                            <span class="text-[10px] text-green-400 font-semibold flex items-center gap-1 mt-1">
+                                <span class="material-symbols-outlined text-[12px]">trending_up</span> +1.2% this week
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Active Rules -->
+                    <div class="glass-panel p-4 rounded-2xl border border-white/10 flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[10px] font-mono text-on-surface-variant uppercase">Active Rules</span>
+                            <span class="material-symbols-outlined text-primary text-[18px]">rule</span>
+                        </div>
+                        <div class="mt-2">
+                            <h2 id="dqActiveRulesCount" class="text-2xl font-black text-white">28</h2>
+                            <p class="text-[10px] text-on-surface-variant mt-0.5">Across 6 Snowflake Schemas</p>
+                        </div>
+                    </div>
+
+                    <!-- Failed Checks -->
+                    <div class="glass-panel p-4 rounded-2xl border border-white/10 flex flex-col justify-between bg-gradient-to-br from-error/5 to-transparent">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[10px] font-mono text-error uppercase">Flagged Anomaly</span>
+                            <span class="material-symbols-outlined text-error text-[18px]">error</span>
+                        </div>
+                        <div class="mt-2">
+                            <h2 id="dqFailedRulesCount" class="text-2xl font-black text-error">2</h2>
+                            <p class="text-[10px] text-on-surface-variant mt-0.5">Requires Cortex Auto-Fix</p>
+                        </div>
+                    </div>
+
+                    <!-- SLA Freshness -->
+                    <div class="glass-panel p-4 rounded-2xl border border-white/10 flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[10px] font-mono text-on-surface-variant uppercase">Data Freshness</span>
+                            <span class="material-symbols-outlined text-secondary text-[18px]">schedule</span>
+                        </div>
+                        <div class="mt-2">
+                            <h2 class="text-2xl font-black text-secondary">&lt; 3m ago</h2>
+                            <p class="text-[10px] text-green-400 mt-0.5">Within SLA (&lt;15m)</p>
+                        </div>
+                    </div>
+
+                    <!-- Total Rows Audited -->
+                    <div class="glass-panel p-4 rounded-2xl border border-white/10 flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[10px] font-mono text-on-surface-variant uppercase">Audited Rows</span>
+                            <span class="material-symbols-outlined text-tertiary-container text-[18px]">table_rows</span>
+                        </div>
+                        <div class="mt-2">
+                            <h2 class="text-2xl font-black text-white">1.85M</h2>
+                            <p class="text-[10px] text-on-surface-variant mt-0.5">100% Partition Pruning</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Quality Navigation Tabs -->
+                <div class="flex items-center gap-2 border-b border-white/10 pb-3">
+                    <button id="dqTab-overview" class="px-4 py-2 text-xs font-bold rounded-xl bg-primary/10 text-primary border border-primary/30 transition-all" onclick="switchDQSubTab('overview')">
+                        Overview & Health Matrices
+                    </button>
+                    <button id="dqTab-rules" class="px-4 py-2 text-xs font-semibold rounded-xl text-on-surface-variant hover:text-white hover:bg-white/5 transition-all" onclick="switchDQSubTab('rules')">
+                        Rules & Validation Engine
+                    </button>
+                    <button id="dqTab-remediation" class="px-4 py-2 text-xs font-semibold rounded-xl text-on-surface-variant hover:text-white hover:bg-white/5 transition-all flex items-center gap-1.5" onclick="switchDQSubTab('remediation')">
+                        <span>Anomaly Remediation Stream</span>
+                        <span class="w-2 h-2 rounded-full bg-error animate-ping"></span>
+                    </button>
+                </div>
+
+                <!-- SUB TAB 1: OVERVIEW & HEALTH MATRICES -->
+                <div id="dqSubView-overview" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 select-none">
+                        <!-- Table Card 1: ORDERS -->
+                        <div class="glass-panel p-5 rounded-2xl border border-white/10 hover:border-primary/40 transition-all space-y-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-[9px] font-mono text-primary uppercase tracking-wider">SNOWFLAKE: PUBLIC.ORDERS</span>
+                                    <h3 class="text-sm font-bold text-white mt-1">Orders Transaction Table</h3>
+                                </div>
+                                <span class="bg-green-500/10 text-green-400 border border-green-500/20 text-[10px] px-2 py-0.5 rounded-full font-bold">HEALTHY</span>
+                            </div>
+                            <div class="space-y-2 text-xs text-on-surface-variant">
+                                <div class="flex justify-between">
+                                    <span>Pass Rate:</span>
+                                    <span class="text-white font-mono font-bold">100.0%</span>
+                                </div>
+                                <div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-primary h-full rounded-full" style="width: 100%;"></div>
+                                </div>
+                                <div class="flex justify-between text-[11px] pt-1">
+                                    <span>Nulls: <strong class="text-white font-mono">0.0%</strong></span>
+                                    <span>Uniqueness: <strong class="text-white font-mono">99.98%</strong></span>
+                                </div>
+                            </div>
+                            <div class="pt-2 border-t border-white/5 flex justify-between items-center text-xs">
+                                <span class="text-on-surface-variant text-[10px]">8 Rules Active</span>
+                                <button class="text-primary hover:underline text-xs font-semibold" onclick="runTableDQCheck('ORDERS')">Run Audit</button>
+                            </div>
+                        </div>
+
+                        <!-- Table Card 2: CUSTOMERS -->
+                        <div class="glass-panel p-5 rounded-2xl border border-white/10 hover:border-primary/40 transition-all space-y-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-[9px] font-mono text-primary uppercase tracking-wider">SNOWFLAKE: CRM.CUSTOMERS</span>
+                                    <h3 class="text-sm font-bold text-white mt-1">Customer Accounts</h3>
+                                </div>
+                                <span class="bg-green-500/10 text-green-400 border border-green-500/20 text-[10px] px-2 py-0.5 rounded-full font-bold">HEALTHY</span>
+                            </div>
+                            <div class="space-y-2 text-xs text-on-surface-variant">
+                                <div class="flex justify-between">
+                                    <span>Pass Rate:</span>
+                                    <span class="text-white font-mono font-bold">99.2%</span>
+                                </div>
+                                <div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-primary h-full rounded-full" style="width: 99.2%;"></div>
+                                </div>
+                                <div class="flex justify-between text-[11px] pt-1">
+                                    <span>Nulls: <strong class="text-white font-mono">0.08%</strong></span>
+                                    <span>Uniqueness: <strong class="text-white font-mono">100%</strong></span>
+                                </div>
+                            </div>
+                            <div class="pt-2 border-t border-white/5 flex justify-between items-center text-xs">
+                                <span class="text-on-surface-variant text-[10px]">6 Rules Active</span>
+                                <button class="text-primary hover:underline text-xs font-semibold" onclick="runTableDQCheck('CUSTOMERS')">Run Audit</button>
+                            </div>
+                        </div>
+
+                        <!-- Table Card 3: FINANCIAL_LEDGER (FLAGGED) -->
+                        <div class="glass-panel p-5 rounded-2xl border border-error/30 hover:border-error transition-all space-y-4 bg-gradient-to-br from-error/5 to-transparent">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-[9px] font-mono text-error uppercase tracking-wider">FINANCE.LEDGER</span>
+                                    <h3 class="text-sm font-bold text-white mt-1">Financial Transactions</h3>
+                                </div>
+                                <span class="bg-error/10 text-error border border-error/30 text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">FLAGGED (2)</span>
+                            </div>
+                            <div class="space-y-2 text-xs text-on-surface-variant">
+                                <div class="flex justify-between">
+                                    <span>Pass Rate:</span>
+                                    <span class="text-error font-mono font-bold">92.4%</span>
+                                </div>
+                                <div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-error h-full rounded-full" style="width: 92.4%;"></div>
+                                </div>
+                                <div class="flex justify-between text-[11px] pt-1">
+                                    <span>Nulls: <strong class="text-error font-mono">3.4%</strong></span>
+                                    <span>Dup Hash: <strong class="text-error font-mono">12 rows</strong></span>
+                                </div>
+                            </div>
+                            <div class="pt-2 border-t border-white/5 flex justify-between items-center text-xs">
+                                <span class="text-error text-[10px]">Action Required</span>
+                                <button class="bg-error text-white text-[11px] font-bold px-3 py-1 rounded-lg hover:bg-error/80 transition-all" onclick="triggerCortexDQFix('FINANCIAL_LEDGER')">Auto-Fix</button>
+                            </div>
+                        </div>
+
+                        <!-- Table Card 4: LEADS_STREAM -->
+                        <div class="glass-panel p-5 rounded-2xl border border-white/10 hover:border-primary/40 transition-all space-y-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-[9px] font-mono text-primary uppercase tracking-wider">STREAMS.LEADS</span>
+                                    <h3 class="text-sm font-bold text-white mt-1">Ingested Web Leads</h3>
+                                </div>
+                                <span class="bg-green-500/10 text-green-400 border border-green-500/20 text-[10px] px-2 py-0.5 rounded-full font-bold">HEALTHY</span>
+                            </div>
+                            <div class="space-y-2 text-xs text-on-surface-variant">
+                                <div class="flex justify-between">
+                                    <span>Pass Rate:</span>
+                                    <span class="text-white font-mono font-bold">98.9%</span>
+                                </div>
+                                <div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-primary h-full rounded-full" style="width: 98.9%;"></div>
+                                </div>
+                                <div class="flex justify-between text-[11px] pt-1">
+                                    <span>Regex Valid: <strong class="text-white font-mono">99.1%</strong></span>
+                                    <span>SLA: <strong class="text-white font-mono">&lt; 1m</strong></span>
+                                </div>
+                            </div>
+                            <div class="pt-2 border-t border-white/5 flex justify-between items-center text-xs">
+                                <span class="text-on-surface-variant text-[10px]">7 Rules Active</span>
+                                <button class="text-primary hover:underline text-xs font-semibold" onclick="runTableDQCheck('LEADS')">Run Audit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB TAB 2: RULES & VALIDATION ENGINE -->
+                <div id="dqSubView-rules" class="hidden-view space-y-4">
+                    <div class="glass-panel p-4 rounded-2xl border border-white/10 overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="text-[10px] font-bold text-on-surface-variant border-b border-white/10 uppercase tracking-wider">
+                                    <th class="pb-3 px-4">Rule Name</th>
+                                    <th class="pb-3 px-4">Target Table & Column</th>
+                                    <th class="pb-3 px-4">Validation Type</th>
+                                    <th class="pb-3 px-4">Threshold</th>
+                                    <th class="pb-3 px-4">Status</th>
+                                    <th class="pb-3 px-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dqRulesTableBody" class="text-xs divide-y divide-white/5">
+                                <tr>
+                                    <td class="py-3 px-4 font-bold text-white">ORDER_ID_NOT_NULL</td>
+                                    <td class="py-3 px-4 font-mono text-primary">PUBLIC.ORDERS (ORDER_ID)</td>
+                                    <td class="py-3 px-4"><span class="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-[10px]">NOT NULL</span></td>
+                                    <td class="py-3 px-4 font-mono text-on-surface-variant">0.00% Nulls</td>
+                                    <td class="py-3 px-4"><span class="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold">PASSING</span></td>
+                                    <td class="py-3 px-4">
+                                        <button class="text-primary hover:underline font-bold" onclick="runSingleRuleTest('ORDER_ID_NOT_NULL')">Test Now</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-bold text-white">EMAIL_SYNTAX_FORMAT</td>
+                                    <td class="py-3 px-4 font-mono text-primary">CRM.CUSTOMERS (EMAIL)</td>
+                                    <td class="py-3 px-4"><span class="bg-secondary/10 text-secondary px-2 py-0.5 rounded-full text-[10px]">REGEX MATCH</span></td>
+                                    <td class="py-3 px-4 font-mono text-on-surface-variant">&gt;99.5% Match</td>
+                                    <td class="py-3 px-4"><span class="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold">PASSING</span></td>
+                                    <td class="py-3 px-4">
+                                        <button class="text-primary hover:underline font-bold" onclick="runSingleRuleTest('EMAIL_SYNTAX_FORMAT')">Test Now</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-bold text-white">TRANSACTION_HASH_UNIQUE</td>
+                                    <td class="py-3 px-4 font-mono text-error">FINANCE.LEDGER (TX_HASH)</td>
+                                    <td class="py-3 px-4"><span class="bg-error/10 text-error px-2 py-0.5 rounded-full text-[10px]">UNIQUENESS</span></td>
+                                    <td class="py-3 px-4 font-mono text-on-surface-variant">100.0% Unique</td>
+                                    <td class="py-3 px-4"><span class="bg-error/10 text-error border border-error/30 px-2 py-0.5 rounded-full text-[10px] font-bold animate-pulse">FAILING (12 DUP)</span></td>
+                                    <td class="py-3 px-4">
+                                        <button class="bg-error text-white text-[11px] font-bold px-2.5 py-1 rounded-lg hover:bg-error/80 transition-all" onclick="triggerCortexDQFix('FINANCIAL_LEDGER')">Fix Issue</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SUB TAB 3: ANOMALY REMEDIATION STREAM -->
+                <div id="dqSubView-remediation" class="hidden-view space-y-4">
+                    <div class="glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-error text-[18px]">warning</span>
+                            Active Data Anomaly Stream & Cortex AI Auto-Remediation
+                        </h3>
+                        <div class="space-y-3" id="dqAnomalyStreamContainer">
+                            <div class="p-4 rounded-xl bg-error/10 border border-error/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="bg-error text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase">CRITICAL</span>
+                                        <span class="text-xs font-bold text-white">Duplicate Transaction Hashes in FINANCE.LEDGER</span>
+                                    </div>
+                                    <p class="text-[11px] text-on-surface-variant mt-1">12 rows exhibit duplicate cryptographic hashes. Snowflake micro-partition scanner flagged potential race condition during stream commit.</p>
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <button class="bg-primary text-on-secondary font-bold text-xs px-3 py-1.5 rounded-lg active:scale-95 transition-all flex items-center gap-1" onclick="triggerCortexDQFix('FINANCIAL_LEDGER')">
+                                        <span class="material-symbols-outlined text-[14px]">auto_fix_high</span>
+                                        Cortex Auto-Dedupe
+                                    </button>
+                                    <button class="bg-surface-container border border-white/10 text-xs px-3 py-1.5 rounded-lg text-white hover:bg-white/10 transition-all" onclick="switchTab('workflows')">
+                                        Route to Gate
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
 
             <!-- 3AA. QUERY STUDIO TAB VIEW -->
-            <section id="view-query-studio" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view">
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary text-[24px]">terminal</span>
-                        Query Studio Console
-                    </h1>
-                    <p class="text-xs text-on-surface-variant mt-1">Write SQL queries directly on Snowflake schemas using compiler integrations.</p>
+            <section id="view-query-studio" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view relative flex flex-col">
+                <!-- Header Toolbar -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[28px]">terminal</span>
+                            Snowflake SQL & Cortex AI Query Studio
+                        </h1>
+                        <p class="text-xs text-on-surface-variant mt-1">Execute high-speed SQL, visualize query execution DAG plans, and optimize credit consumption with Cortex AI.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2 bg-surface-container border border-white/10 px-3 py-1.5 rounded-xl text-xs">
+                            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                            <span class="text-on-surface-variant font-mono">WH: COMPUTE_WH (X-SMALL)</span>
+                        </div>
+                        <button class="bg-primary text-on-secondary font-bold px-4 py-2 rounded-xl text-xs active:scale-95 transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(0,229,195,0.25)]" onclick="runQueryStudioSQL()">
+                            <span class="material-symbols-outlined text-[16px]">play_arrow</span>
+                            Run SQL (Ctrl+Enter)
+                        </button>
+                        <button class="bg-surface-container border border-white/10 text-white font-semibold px-3 py-2 rounded-xl text-xs hover:border-primary/40 transition-all flex items-center gap-1.5" onclick="cortexOptimizeSQL()">
+                            <span class="material-symbols-outlined text-[16px] text-primary">auto_fix_high</span>
+                            Cortex Optimize
+                        </button>
+                        <button class="bg-surface-container border border-white/10 text-white font-semibold px-3 py-2 rounded-xl text-xs hover:border-primary/40 transition-all flex items-center gap-1.5" onclick="sendQueryToVisualBuilder()">
+                            <span class="material-symbols-outlined text-[16px] text-secondary">account_tree</span>
+                            Export to Builder
+                        </button>
+                    </div>
                 </div>
-                
-                <!-- Query studio links directly to the Snowflake Console tab -->
-                <div class="glass-panel p-8 rounded-2xl text-center space-y-4">
-                    <span class="material-symbols-outlined text-primary text-[48px] mx-auto opacity-70">database</span>
-                    <h3 class="text-md font-bold text-white">Open SQL Studio</h3>
-                    <p class="text-xs text-on-surface-variant max-w-sm mx-auto">Redirects to the full console explorer containing databases schema trees and execution tables.</p>
-                    <button class="bg-primary text-on-secondary font-bold py-2 px-6 rounded-xl text-xs active:scale-[0.98] transition-all" onclick="switchTab('data-sources')">Open Studio</button>
+
+                <!-- Main Query Studio 3-Pane Body -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+                    <!-- Left Sidebar: Schema Tree & Query Snippets (3 cols) -->
+                    <div class="lg:col-span-3 space-y-4 select-none">
+                        <!-- Database Schema Selector -->
+                        <div class="glass-panel p-4 rounded-2xl border border-white/10 space-y-3">
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-primary text-[16px]">storage</span>
+                                Schema Browser
+                            </h3>
+                            <select id="queryStudioSchemaSelect" class="w-full bg-background/50 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-primary" onchange="onSchemaSelectChange()">
+                                <option value="ENTERPRISE_DB.PUBLIC">ENTERPRISE_DB.PUBLIC</option>
+                                <option value="CRM.CUSTOMERS">CRM.CUSTOMERS</option>
+                                <option value="FINANCE.LEDGER">FINANCE.LEDGER</option>
+                                <option value="SNOWFLAKE_CORTEX">SNOWFLAKE_CORTEX</option>
+                            </select>
+
+                            <!-- Schema Tree Nodes -->
+                            <div class="space-y-1 text-xs custom-scrollbar max-h-64 overflow-y-auto pt-1">
+                                <div class="cursor-pointer hover:bg-white/5 p-1.5 rounded-lg flex items-center gap-2 text-white font-mono" onclick="insertTableSnippet('PUBLIC.ORDERS')">
+                                    <span class="material-symbols-outlined text-[14px] text-primary">table_chart</span>
+                                    <span>PUBLIC.ORDERS</span>
+                                </div>
+                                <div class="cursor-pointer hover:bg-white/5 p-1.5 rounded-lg flex items-center gap-2 text-white font-mono" onclick="insertTableSnippet('CRM.CUSTOMERS')">
+                                    <span class="material-symbols-outlined text-[14px] text-primary">table_chart</span>
+                                    <span>CRM.CUSTOMERS</span>
+                                </div>
+                                <div class="cursor-pointer hover:bg-white/5 p-1.5 rounded-lg flex items-center gap-2 text-white font-mono" onclick="insertTableSnippet('FINANCE.LEDGER')">
+                                    <span class="material-symbols-outlined text-[14px] text-error">table_chart</span>
+                                    <span>FINANCE.LEDGER</span>
+                                </div>
+                                <div class="cursor-pointer hover:bg-white/5 p-1.5 rounded-lg flex items-center gap-2 text-white font-mono" onclick="insertTableSnippet('STREAMS.LEADS')">
+                                    <span class="material-symbols-outlined text-[14px] text-secondary">table_chart</span>
+                                    <span>STREAMS.LEADS</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sample Queries Library -->
+                        <div class="glass-panel p-4 rounded-2xl border border-white/10 space-y-3">
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-secondary text-[16px]">library_books</span>
+                                Quick SQL Templates
+                            </h3>
+                            <div class="space-y-1.5">
+                                <button class="w-full text-left p-2 rounded-lg bg-surface-container hover:bg-primary/10 text-xs text-on-surface-variant hover:text-white transition-all font-medium flex items-center justify-between" onclick="loadSampleQuery('lead_gen')">
+                                    <span>1. Filter Unverified Leads</span>
+                                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                                </button>
+                                <button class="w-full text-left p-2 rounded-lg bg-surface-container hover:bg-primary/10 text-xs text-on-surface-variant hover:text-white transition-all font-medium flex items-center justify-between" onclick="loadSampleQuery('ledger_audit')">
+                                    <span>2. Financial Ledger Anomaly Scan</span>
+                                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                                </button>
+                                <button class="w-full text-left p-2 rounded-lg bg-surface-container hover:bg-primary/10 text-xs text-on-surface-variant hover:text-white transition-all font-medium flex items-center justify-between" onclick="loadSampleQuery('cortex_summary')">
+                                    <span>3. Cortex AI Sentiment Aggregation</span>
+                                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Center & Right: Multi-tab SQL Editor, Results & Execution Plan (9 cols) -->
+                    <div class="lg:col-span-9 space-y-6 flex flex-col">
+                        <!-- Code Editor Header Tabs -->
+                        <div class="glass-panel rounded-2xl border border-white/10 p-4 space-y-3">
+                            <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-3 py-1 rounded-lg bg-primary/10 text-primary border border-primary/30 text-xs font-mono font-bold flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-[14px]">code</span>
+                                        Query_Worksheet_1.sql
+                                    </span>
+                                </div>
+                                <span id="queryExecStatusBadge" class="text-[11px] font-mono text-on-surface-variant">Status: READY</span>
+                            </div>
+
+                            <!-- Text Area Editor -->
+                            <div class="relative">
+                                <textarea id="queryStudioEditor" rows="6" class="w-full bg-slate-950/80 border border-white/10 rounded-xl p-4 font-mono text-xs text-emerald-400 focus:outline-none focus:border-primary leading-relaxed shadow-inner" placeholder="Enter Snowflake SQL statement..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Results & Plan Split View -->
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 flex-1">
+                            <!-- Execution Results Table (7 cols) -->
+                            <div class="md:col-span-7 glass-panel p-4 rounded-2xl border border-white/10 flex flex-col">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h3 class="text-xs font-bold text-white flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-primary text-[16px]">table_rows</span>
+                                        Query Execution Output
+                                    </h3>
+                                    <div class="flex items-center gap-2">
+                                        <span id="queryResultRowCount" class="text-[10px] text-on-surface-variant font-mono">12 rows returned in 142ms</span>
+                                        <button class="text-primary hover:underline text-xs font-semibold" onclick="downloadQueryResultCSV()">Export CSV</button>
+                                    </div>
+                                </div>
+                                <div class="overflow-x-auto max-h-64 custom-scrollbar rounded-xl border border-white/5">
+                                    <table class="w-full text-left border-collapse text-xs font-mono">
+                                        <thead class="bg-surface-container-high text-on-surface-variant text-[10px] uppercase">
+                                            <tr id="queryStudioTableHeader">
+                                                <th class="p-2 border-b border-white/10">ID</th>
+                                                <th class="p-2 border-b border-white/10">LEAD_NAME</th>
+                                                <th class="p-2 border-b border-white/10">SCORE</th>
+                                                <th class="p-2 border-b border-white/10">STATUS</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="queryStudioTableBody" class="divide-y divide-white/5 text-white">
+                                            <!-- Dynamically populated -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Cortex AI Optimizer & Execution Plan DAG (5 cols) -->
+                            <div class="md:col-span-5 space-y-4">
+                                <!-- Cortex AI Optimization Suggestion Card -->
+                                <div class="glass-panel p-4 rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[10px] font-mono text-primary font-bold uppercase flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[14px]">auto_fix_high</span>
+                                            Cortex Optimization Insight
+                                        </span>
+                                        <span class="bg-primary/20 text-primary text-[9px] font-bold px-2 py-0.5 rounded-full">+48% Speedup</span>
+                                    </div>
+                                    <p id="cortexOptimizerText" class="text-[11px] text-on-surface-variant leading-normal">Query uses zero-copy clone partition scan. Estimated 1.2 Snowflake credits saved per batch run.</p>
+                                </div>
+
+                                <!-- Visual Execution Plan DAG -->
+                                <div class="glass-panel p-4 rounded-2xl border border-white/10 space-y-3">
+                                    <h3 class="text-xs font-bold text-white flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-secondary text-[16px]">account_tree</span>
+                                        Visual Execution Plan DAG
+                                    </h3>
+                                    <div class="space-y-2 text-xs">
+                                        <div class="dag-node flex items-center justify-between">
+                                            <span class="text-on-surface-variant text-[10px] font-mono">1. TableScan</span>
+                                            <span class="text-white font-bold font-mono">PUBLIC.ORDERS (1.4M rows)</span>
+                                        </div>
+                                        <div class="w-0.5 h-3 bg-primary/40 mx-auto"></div>
+                                        <div class="dag-node flex items-center justify-between">
+                                            <span class="text-on-surface-variant text-[10px] font-mono">2. FilterPredicate</span>
+                                            <span class="text-primary font-bold font-mono">status = 'PENDING'</span>
+                                        </div>
+                                        <div class="w-0.5 h-3 bg-primary/40 mx-auto"></div>
+                                        <div class="dag-node flex items-center justify-between">
+                                            <span class="text-on-surface-variant text-[10px] font-mono">3. Cortex LLM</span>
+                                            <span class="text-secondary font-bold font-mono">CORTEX.COMPLETE()</span>
+                                        </div>
+                                        <div class="w-0.5 h-3 bg-primary/40 mx-auto"></div>
+                                        <div class="dag-node flex items-center justify-between border-primary/40">
+                                            <span class="text-on-surface-variant text-[10px] font-mono">4. ResultOutput</span>
+                                            <span class="text-emerald-400 font-bold font-mono">12 Qualified Rows</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 

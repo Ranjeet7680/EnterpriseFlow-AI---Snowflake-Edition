@@ -3780,3 +3780,215 @@ function submitSupportTicket() {
     if (msgInput) msgInput.value = '';
 }
 
+// ==========================================
+// DATA QUALITY SUITE HANDLERS
+// ==========================================
+function switchDQSubTab(subTabId) {
+    const subViews = ['overview', 'rules', 'remediation'];
+    subViews.forEach(tab => {
+        const viewEl = document.getElementById(`dqSubView-${tab}`);
+        const tabBtn = document.getElementById(`dqTab-${tab}`);
+        if (viewEl) {
+            if (tab === subTabId) {
+                viewEl.classList.remove('hidden-view');
+            } else {
+                viewEl.classList.add('hidden-view');
+            }
+        }
+        if (tabBtn) {
+            if (tab === subTabId) {
+                tabBtn.className = "px-4 py-2 text-xs font-bold rounded-xl bg-primary/10 text-primary border border-primary/30 transition-all";
+            } else {
+                tabBtn.className = "px-4 py-2 text-xs font-semibold rounded-xl text-on-surface-variant hover:text-white hover:bg-white/5 transition-all";
+            }
+        }
+    });
+}
+
+function runAllDQValidationTests() {
+    showSlackToast("⚡ Executing 28 Data Quality rules across Snowflake schemas...");
+    const scoreEl = document.getElementById('dqOverallScoreText');
+    if (scoreEl) scoreEl.innerText = "TESTING...";
+    
+    setTimeout(() => {
+        if (scoreEl) scoreEl.innerText = "98.9%";
+        const activeCount = document.getElementById('dqActiveRulesCount');
+        if (activeCount) activeCount.innerText = "28";
+        showSlackToast("✅ All 28 Data Quality validation rules executed! 27 Passed, 1 flagged for auto-remediation.");
+    }, 1200);
+}
+
+function runTableDQCheck(tableName) {
+    showSlackToast(`🔍 Running full partition audit on table ${tableName}...`);
+    setTimeout(() => {
+        showSlackToast(`✅ Audit Complete for ${tableName}: 100% Partition Health, 0 critical null violations.`);
+    }, 900);
+}
+
+function runSingleRuleTest(ruleName) {
+    showSlackToast(`⚙️ Running validation test: ${ruleName}...`);
+    setTimeout(() => {
+        showSlackToast(`✅ Test [${ruleName}] PASSED! Rule threshold verified.`);
+    }, 800);
+}
+
+function triggerCortexDQFix(tableName) {
+    showSlackToast(`🤖 Cortex AI Auto-Fix initiated for table ${tableName}...`);
+    setTimeout(() => {
+        const failedCount = document.getElementById('dqFailedRulesCount');
+        if (failedCount) failedCount.innerText = "0";
+        const scoreEl = document.getElementById('dqOverallScoreText');
+        if (scoreEl) scoreEl.innerText = "100.0%";
+        
+        const streamContainer = document.getElementById('dqAnomalyStreamContainer');
+        if (streamContainer) {
+            streamContainer.innerHTML = `
+                <div class="p-4 rounded-xl bg-green-500/10 border border-green-500/30 flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-xs text-green-400 font-semibold">
+                        <span class="material-symbols-outlined text-[18px]">verified</span>
+                        <span>All anomalies in ${tableName} successfully remediated by Cortex AI zero-copy deduplication script.</span>
+                    </div>
+                    <span class="text-[10px] font-mono text-on-surface-variant">${new Date().toLocaleTimeString()}</span>
+                </div>
+            `;
+        }
+        showSlackToast(`🎉 Cortex AI successfully deduplicated 12 rows in ${tableName}! Quality Score is now 100.0%.`);
+    }, 1200);
+}
+
+function openAddDQRuleModal() {
+    const ruleName = prompt("Enter New Data Quality Rule Name:", "CHECK_AMOUNT_POSITIVE");
+    if (ruleName) {
+        const tableBody = document.getElementById('dqRulesTableBody');
+        if (tableBody) {
+            tableBody.insertAdjacentHTML('afterbegin', `
+                <tr class="animate-fadeIn bg-primary/5">
+                    <td class="py-3 px-4 font-bold text-white">${ruleName.toUpperCase()}</td>
+                    <td class="py-3 px-4 font-mono text-primary">PUBLIC.ORDERS (AMOUNT)</td>
+                    <td class="py-3 px-4"><span class="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-[10px]">RANGE CHECK</span></td>
+                    <td class="py-3 px-4 font-mono text-on-surface-variant">&gt; 0.00</td>
+                    <td class="py-3 px-4"><span class="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold">PASSING</span></td>
+                    <td class="py-3 px-4">
+                        <button class="text-primary hover:underline font-bold" onclick="runSingleRuleTest('${ruleName}')">Test Now</button>
+                    </td>
+                </tr>
+            `);
+        }
+        showSlackToast(`✅ Data Quality Rule [${ruleName.toUpperCase()}] successfully added to schema observer!`);
+    }
+}
+
+// ==========================================
+// QUERY STUDIO HANDLERS
+// ==========================================
+const sampleQueries = {
+    lead_gen: `SELECT lead_id, first_name, last_name, company, score, status \nFROM STREAMS.LEADS \nWHERE status = 'UNVERIFIED' AND score > 75 \nORDER BY score DESC LIMIT 50;`,
+    ledger_audit: `SELECT tx_id, tx_hash, amount, sender, recipient, timestamp \nFROM FINANCE.LEDGER \nWHERE amount > 10000 OR tx_hash IN (\n  SELECT tx_hash FROM FINANCE.LEDGER GROUP BY tx_hash HAVING COUNT(*) > 1\n);`,
+    cortex_summary: `SELECT \n  category, \n  COUNT(*) as total_requests, \n  SNOWFLAKE.CORTEX.SENTIMENT(user_feedback) as avg_sentiment \nFROM PUBLIC.CUSTOMER_FEEDBACK \nGROUP BY category \nORDER BY avg_sentiment ASC;`
+};
+
+const queryResultData = {
+    lead_gen: [
+        { id: 'LD-9021', name: 'Alexander Wright', score: 94, status: 'UNVERIFIED' },
+        { id: 'LD-9022', name: 'Sophia Chen', score: 91, status: 'UNVERIFIED' },
+        { id: 'LD-9023', name: 'Marcus Vance', score: 88, status: 'UNVERIFIED' },
+        { id: 'LD-9024', name: 'Elena Rostova', score: 85, status: 'UNVERIFIED' },
+        { id: 'LD-9025', name: 'David Miller', score: 82, status: 'UNVERIFIED' }
+    ],
+    ledger_audit: [
+        { id: 'TX-4401', name: '$145,000.00 Transfer', score: 'DUP HASH', status: 'FLAGGED' },
+        { id: 'TX-4402', name: '$98,500.00 Wire', score: 'DUP HASH', status: 'FLAGGED' },
+        { id: 'TX-4403', name: '$12,000.00 Payroll', score: 'CLEAN', status: 'VERIFIED' }
+    ],
+    cortex_summary: [
+        { id: 'CAT-01', name: 'Product Checkout', score: 0.88, status: 'POSITIVE' },
+        { id: 'CAT-02', name: 'Warehouse Latency', score: -0.42, status: 'NEGATIVE' },
+        { id: 'CAT-03', name: 'AI Autopilot', score: 0.95, status: 'VERY POSITIVE' }
+    ]
+};
+
+function loadSampleQuery(type) {
+    const editor = document.getElementById('queryStudioEditor');
+    if (editor && sampleQueries[type]) {
+        editor.value = sampleQueries[type];
+        showSlackToast(`📄 Loaded SQL Template: ${type.toUpperCase()}`);
+        runQueryStudioSQL(type);
+    }
+}
+
+function runQueryStudioSQL(type = 'lead_gen') {
+    const badge = document.getElementById('queryExecStatusBadge');
+    if (badge) {
+        badge.innerText = "Status: EXECUTING ON WAREHOUSE...";
+        badge.className = "text-[11px] font-mono text-primary animate-pulse font-bold";
+    }
+
+    setTimeout(() => {
+        if (badge) {
+            badge.innerText = "Status: EXECUTED (SUCCESS)";
+            badge.className = "text-[11px] font-mono text-green-400 font-bold";
+        }
+        const data = queryResultData[type] || queryResultData.lead_gen;
+        const tbody = document.getElementById('queryStudioTableBody');
+        const rowCount = document.getElementById('queryResultRowCount');
+        
+        if (rowCount) rowCount.innerText = `${data.length} rows returned in 142ms`;
+        
+        if (tbody) {
+            tbody.innerHTML = data.map(row => `
+                <tr class="hover:bg-white/5 transition-colors">
+                    <td class="p-2 text-primary font-bold">${row.id}</td>
+                    <td class="p-2 text-white font-medium">${row.name}</td>
+                    <td class="p-2 text-on-surface-variant">${row.score}</td>
+                    <td class="p-2"><span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${row.status === 'FLAGGED' ? 'bg-error/10 text-error' : 'bg-primary/10 text-primary'}">${row.status}</span></td>
+                </tr>
+            `).join('');
+        }
+        showSlackToast("⚡ Query compilation complete on Snowflake warehouse (0.002 credits burned).");
+    }, 600);
+}
+
+function cortexOptimizeSQL() {
+    showSlackToast("🤖 Cortex AI analyzing Query AST & zero-copy partitions...");
+    const optText = document.getElementById('cortexOptimizerText');
+    if (optText) {
+        optText.innerHTML = `<strong>Cortex Optimization Summary:</strong> Applied automatic micro-partition pruning & zero-copy clone filter. Reduced scan volume from 1.85M rows down to 12 target records.<br/><span class="text-primary font-bold">+48% runtime speedup | 1.2 Snowflake credits saved per batch run.</span>`;
+    }
+    showSlackToast("✨ Query optimized! +48% speedup applied to query execution profile.");
+}
+
+function sendQueryToVisualBuilder() {
+    showSlackToast("🔗 Exporting SQL Query to Visual Builder workspace...");
+    switchTab('workflows');
+    setTimeout(() => {
+        showSlackToast("✅ Query node added to Visual Builder canvas!");
+    }, 400);
+}
+
+function insertTableSnippet(tableName) {
+    const editor = document.getElementById('queryStudioEditor');
+    if (editor) {
+        editor.value = `SELECT * FROM ${tableName} LIMIT 50;`;
+        runQueryStudioSQL();
+    }
+}
+
+function onSchemaSelectChange() {
+    const sel = document.getElementById('queryStudioSchemaSelect');
+    if (sel) {
+        showSlackToast(`🗄️ Switched Query Studio active schema context to ${sel.value}`);
+    }
+}
+
+function downloadQueryResultCSV() {
+    const csvContent = "data:text/csv;charset=utf-8,ID,NAME,SCORE,STATUS\nLD-9021,Alexander Wright,94,UNVERIFIED\nLD-9022,Sophia Chen,91,UNVERIFIED\n";
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "query_results_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showSlackToast("📥 Query execution output exported as query_results_export.csv");
+}
+
