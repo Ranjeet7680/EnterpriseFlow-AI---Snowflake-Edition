@@ -3992,3 +3992,217 @@ function downloadQueryResultCSV() {
     showSlackToast("📥 Query execution output exported as query_results_export.csv");
 }
 
+// ==========================================
+// 9-DOT APP LAUNCHER & NOTIFICATIONS CENTER HANDLERS
+// ==========================================
+function toggleAppLauncher(event) {
+    if (event) event.stopPropagation();
+    const modal = document.getElementById('appLauncherModal');
+    const notif = document.getElementById('notificationsDropdown');
+    if (notif) notif.classList.add('hidden');
+    if (modal) {
+        if (modal.classList.contains('hidden')) {
+            modal.classList.remove('hidden');
+        } else {
+            modal.classList.add('hidden');
+        }
+    }
+}
+
+function closeAppLauncherOnOutsideClick(event) {
+    const modal = document.getElementById('appLauncherModal');
+    if (modal && !modal.classList.contains('hidden')) {
+        modal.classList.add('hidden');
+    }
+}
+
+function filterAppLauncherGrid() {
+    const query = document.getElementById('appLauncherSearchInput')?.value.toLowerCase() || '';
+    const tiles = document.querySelectorAll('#appLauncherGrid .app-tile');
+    tiles.forEach(tile => {
+        const name = tile.getAttribute('data-app-name') || '';
+        if (name.includes(query)) {
+            tile.style.display = 'flex';
+        } else {
+            tile.style.display = 'none';
+        }
+    });
+}
+
+function launchSuiteApp(tabId) {
+    const modal = document.getElementById('appLauncherModal');
+    const notif = document.getElementById('notificationsDropdown');
+    if (modal) modal.classList.add('hidden');
+    if (notif) notif.classList.add('hidden');
+    switchTab(tabId);
+    showSlackToast(`🚀 Launched ${tabId.replace('-', ' ').toUpperCase()} Suite Application!`);
+}
+
+function toggleNotificationsDropdown(event) {
+    if (event) event.stopPropagation();
+    const notif = document.getElementById('notificationsDropdown');
+    const modal = document.getElementById('appLauncherModal');
+    if (modal) modal.classList.add('hidden');
+    if (notif) {
+        if (notif.classList.contains('hidden')) {
+            notif.classList.remove('hidden');
+        } else {
+            notif.classList.add('hidden');
+        }
+    }
+}
+
+function markNotificationsRead() {
+    const badge = document.getElementById('unreadNotificationBadge');
+    const headerBadge = document.getElementById('notifBadgeHeader');
+    if (badge) badge.classList.add('hidden');
+    if (headerBadge) {
+        headerBadge.innerText = "0 New";
+        headerBadge.className = "bg-white/10 text-on-surface-variant text-[9px] font-bold px-2 py-0.5 rounded-full";
+    }
+    showSlackToast("✓ All notifications marked as read.");
+}
+
+function clearAllNotifications() {
+    const list = document.getElementById('notifListContainer');
+    if (list) {
+        list.innerHTML = `
+            <div class="p-6 text-center text-on-surface-variant text-xs space-y-2">
+                <span class="material-symbols-outlined text-[32px] opacity-40">notifications_off</span>
+                <p>No active unread notifications.</p>
+            </div>
+        `;
+    }
+    markNotificationsRead();
+}
+
+function addNotificationItem(severity, title, msg, actionTab = null) {
+    const list = document.getElementById('notifListContainer');
+    const badge = document.getElementById('unreadNotificationBadge');
+    if (badge) badge.classList.remove('hidden');
+    
+    if (list) {
+        const severityBg = severity === 'CRITICAL' ? 'bg-error/10 border-error/20' : (severity === 'WARNING' ? 'bg-amber-500/10 border-amber-500/20' : 'bg-primary/10 border-primary/20');
+        const severityBadge = severity === 'CRITICAL' ? 'bg-error text-white' : (severity === 'WARNING' ? 'bg-amber-500 text-slate-950' : 'bg-primary text-on-secondary');
+        
+        list.insertAdjacentHTML('afterbegin', `
+            <div class="p-3 rounded-xl ${severityBg} border flex flex-col gap-1.5 animate-fadeIn">
+                <div class="flex items-center justify-between">
+                    <span class="${severityBadge} text-[8px] font-black px-1.5 py-0.5 rounded uppercase">${severity}</span>
+                    <span class="text-[9px] text-on-surface-variant font-mono">${new Date().toLocaleTimeString()}</span>
+                </div>
+                <h4 class="font-bold text-white text-[11px]">${title}</h4>
+                <p class="text-[10px] text-on-surface-variant">${msg}</p>
+                ${actionTab ? `<button class="self-start mt-1 bg-primary/20 hover:bg-primary/30 text-primary font-bold text-[10px] px-2.5 py-1 rounded-lg transition-all" onclick="launchSuiteApp('${actionTab}')">Open Suite</button>` : ''}
+            </div>
+        `);
+    }
+}
+
+// Close popovers on body click
+document.addEventListener('click', (e) => {
+    const notif = document.getElementById('notificationsDropdown');
+    if (notif && !notif.contains(e.target) && !e.target.closest('button[onclick*="toggleNotificationsDropdown"]')) {
+        notif.classList.add('hidden');
+    }
+});
+
+// ==========================================
+// LIVE ACTIVITY & BUSINESS OPERATIONS HANDLERS
+// ==========================================
+let isStreamPaused = false;
+
+function toggleLiveStreamPause() {
+    isStreamPaused = !isStreamPaused;
+    const label = document.getElementById('streamPauseLabel');
+    const btn = document.getElementById('toggleStreamPauseBtn');
+    if (isStreamPaused) {
+        if (label) label.innerText = "Resume Stream";
+        if (btn) btn.className = "bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-amber-500/20 transition-all flex items-center gap-1.5";
+        showSlackToast("⏸️ Live activity log stream paused.");
+    } else {
+        if (label) label.innerText = "Pause Stream";
+        if (btn) btn.className = "bg-primary/10 text-primary border border-primary/30 px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-primary/20 transition-all flex items-center gap-1.5";
+        showSlackToast("▶️ Live activity log stream resumed.");
+    }
+}
+
+function clearLiveLogContainer() {
+    const container = document.getElementById('liveActivityLogContainer');
+    if (container) container.innerHTML = '';
+    showSlackToast("🧹 Live activity output logs cleared.");
+}
+
+function filterLogSeverity(severity) {
+    const filters = ['all', 'error', 'sql', 'ai'];
+    filters.forEach(f => {
+        const btn = document.getElementById(`logFilter-${f}`);
+        if (btn) {
+            if (f === severity) {
+                btn.className = "px-3 py-1 rounded-lg bg-primary/20 text-primary font-bold transition-all";
+            } else {
+                btn.className = "px-3 py-1 rounded-lg text-on-surface-variant hover:text-white transition-all";
+            }
+        }
+    });
+
+    const items = document.querySelectorAll('#liveActivityLogContainer .log-item');
+    items.forEach(item => {
+        if (severity === 'all') {
+            item.style.display = 'flex';
+        } else {
+            if (item.classList.contains(`log-item-${severity}`)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        }
+    });
+}
+
+function downloadLogsCSV() {
+    const csvContent = "data:text/csv;charset=utf-8,TIME,MODULE,MESSAGE\n14:50:12,CORTEX_AI,Autonomous supervisor scanning 12 Snowflake database schemas\n14:50:14,ANOMALY_DETECT,Flagged 12 duplicate hashes in FINANCE.LEDGER\n";
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "live_telemetry_logs.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showSlackToast("📥 Telemetry logs exported to live_telemetry_logs.csv");
+}
+
+function runBusinessOpsScenario() {
+    showSlackToast("⚙️ Running Business Operations End-to-End Bottleneck Simulation...");
+    setTimeout(() => {
+        addNotificationItem('WARNING', 'Ops SLA Risk Detected', 'Inventory stockout forecast requires Purchase Order execution.', 'business-ops');
+        showSlackToast("🚨 Bottleneck detected in INVENTORY_SUPPLY_CHAIN! Triggering automated PO script...");
+    }, 1000);
+}
+
+function resolveOpsBottleneck(unitId) {
+    showSlackToast(`🤖 Cortex Supervisor resolving operational bottleneck for ${unitId}...`);
+    setTimeout(() => {
+        const tableBody = document.getElementById('opsMatrixTableBody');
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td class="py-3 px-4 font-bold text-white">INVENTORY_SUPPLY_CHAIN</td>
+                    <td class="py-3 px-4 text-on-surface-variant">Reorder PO #B-92 dispatched to Alternate Supplier B. Stock safety extended to 42 days.</td>
+                    <td class="py-3 px-4 text-green-400 font-mono font-bold">Resolved (0 Risk)</td>
+                    <td class="py-3 px-4"><span class="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold">HEALTHY</span></td>
+                    <td class="py-3 px-4"><span class="text-xs text-on-surface-variant font-mono">COMPLETE</span></td>
+                </tr>
+                <tr>
+                    <td class="py-3 px-4 font-bold text-white">PAYMENT_GATEWAY_STREAM</td>
+                    <td class="py-3 px-4 text-on-surface-variant">High latency in Stripe transaction Webhook listener.</td>
+                    <td class="py-3 px-4 text-on-surface-variant font-mono">1.2s Latency</td>
+                    <td class="py-3 px-4"><span class="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold">HEALTHY</span></td>
+                    <td class="py-3 px-4"><button class="text-primary hover:underline font-semibold" onclick="resolveOpsBottleneck('PAYMENT_GATEWAY_STREAM')">Re-balance</button></td>
+                </tr>
+            `;
+        }
+        addNotificationItem('SUCCESS', 'Ops Bottleneck Resolved', `Operational unit ${unitId} successfully remediated. SLA efficiency 98.6%.`, 'business-ops');
+        showSlackToast(`🎉 Operational Bottleneck in ${unitId} RESOLVED! Operating Efficiency is now 98.6%.`);
+    }, 1200);
+}

@@ -867,15 +867,231 @@
                     <span class="material-symbols-outlined text-[16px]">smart_toy</span>
                     AI Assistant
                 </button>
-                <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors text-[20px]">notifications</span>
-                    <span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors text-[20px]">apps</span>
-                </div>
-                <div class="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant overflow-hidden cursor-pointer" onclick="switchTab('settings')">
-                    <img id="userHeaderAvatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp7KiPqlvYt640VRXdBiD_xxRbHbNgDu_CAfVGIiJsAA84pTyQ0YpXfvJl3Hq2j3UI2zsyf7tadxTZlnp8W59Fs-UcsC4sdfZj6ZcgeUpYYMPYQAWcw2UcM6H_IMp4CNfaE0hEY4BwNonrbuOz4n1R3EbbG0Kk1HahPdwiBGkTNXDEFB0Zlg9DEV8gvQfjJc8jl2rhqLdoH_opdEmpTUAbm0SLX9INFMawVut-Ag3u7lb7MdwHgM4iDCMmJnpghKVl-2X_b7AIWB0" alt="Avatar"/>
+                <div class="flex items-center gap-3 relative">
+                    <!-- Notifications Button -->
+                    <button class="relative p-1.5 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all" onclick="toggleNotificationsDropdown(event)" title="Notifications Center">
+                        <span class="material-symbols-outlined text-[22px]">notifications</span>
+                        <span id="unreadNotificationBadge" class="absolute top-0 right-0 w-4 h-4 bg-error text-white text-[9px] font-black rounded-full flex items-center justify-center border border-slate-900 animate-pulse">3</span>
+                    </button>
+                    <!-- 9-Dot App Launcher Button -->
+                    <button class="p-1.5 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all group" onclick="toggleAppLauncher(event)" title="9-Dot Suite App Launcher">
+                        <span class="material-symbols-outlined text-[22px] group-hover:rotate-45 transition-transform duration-300">apps</span>
+                    </button>
                 </div>
             </div>
         </header>
+
+        <!-- ========================================== -->
+        <!-- 9-DOT SUITE APP LAUNCHER MODAL OVERLAY -->
+        <!-- ========================================== -->
+        <div id="appLauncherModal" class="fixed inset-0 z-[10001] bg-black/60 backdrop-blur-md flex items-start justify-end p-6 md:p-16 hidden transition-all duration-300 select-none" onclick="closeAppLauncherOnOutsideClick(event)">
+            <div class="w-full max-w-xl glass-panel-heavy rounded-3xl border border-primary/30 p-6 shadow-2xl space-y-5 modal-pop-anim relative bg-slate-950/90" onclick="event.stopPropagation()">
+                <!-- Launcher Header -->
+                <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined text-[22px]">apps</span>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+                                EnterpriseFlow AI Suite
+                                <span class="bg-primary/20 text-primary text-[9px] font-mono px-2 py-0.5 rounded-full font-bold">9-DOT LAUNCHER</span>
+                            </h3>
+                            <p class="text-[10px] text-on-surface-variant">Access core enterprise modules & autonomous agents</p>
+                        </div>
+                    </div>
+                    <button class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-on-surface-variant hover:text-white flex items-center justify-center transition-all" onclick="toggleAppLauncher()">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                </div>
+
+                <!-- Launcher Search Filter -->
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+                    <input type="text" id="appLauncherSearchInput" placeholder="Quick find suite application..." class="w-full bg-background/60 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-on-surface-variant focus:outline-none focus:border-primary/50 transition-all" oninput="filterAppLauncherGrid()"/>
+                </div>
+
+                <!-- 3x3 9-Dot App Grid -->
+                <div id="appLauncherGrid" class="grid grid-cols-3 gap-3">
+                    <!-- App 1: Visual Builder -->
+                    <div class="app-tile group cursor-pointer p-3.5 rounded-2xl bg-surface-container/60 hover:bg-primary/10 border border-white/5 hover:border-primary/40 transition-all flex flex-col justify-between h-28" data-app-name="visual builder workflow" onclick="launchSuiteApp('workflows')">
+                        <div class="flex justify-between items-start">
+                            <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-[20px]">account_tree</span>
+                            </div>
+                            <span class="text-[8px] font-mono bg-green-500/10 text-green-400 border border-green-500/20 px-1.5 py-0.5 rounded-full font-bold">ONLINE</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white group-hover:text-primary transition-colors">Visual Builder</h4>
+                            <p class="text-[9px] text-on-surface-variant line-clamp-1">Drag & Drop Canvas</p>
+                        </div>
+                    </div>
+
+                    <!-- App 2: Data Quality -->
+                    <div class="app-tile group cursor-pointer p-3.5 rounded-2xl bg-surface-container/60 hover:bg-primary/10 border border-white/5 hover:border-primary/40 transition-all flex flex-col justify-between h-28" data-app-name="data quality observability validation" onclick="launchSuiteApp('data-quality')">
+                        <div class="flex justify-between items-start">
+                            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-[20px]">verified</span>
+                            </div>
+                            <span class="text-[8px] font-mono bg-green-500/10 text-green-400 border border-green-500/20 px-1.5 py-0.5 rounded-full font-bold">98.4%</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">Data Quality</h4>
+                            <p class="text-[9px] text-on-surface-variant line-clamp-1">Rule Engine & Anomaly</p>
+                        </div>
+                    </div>
+
+                    <!-- App 3: Query Studio -->
+                    <div class="app-tile group cursor-pointer p-3.5 rounded-2xl bg-surface-container/60 hover:bg-primary/10 border border-white/5 hover:border-primary/40 transition-all flex flex-col justify-between h-28" data-app-name="query studio snowflake sql compiler" onclick="launchSuiteApp('query-studio')">
+                        <div class="flex justify-between items-start">
+                            <div class="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-[20px]">terminal</span>
+                            </div>
+                            <span class="text-[8px] font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded-full font-bold">WH: READY</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white group-hover:text-cyan-400 transition-colors">Query Studio</h4>
+                            <p class="text-[9px] text-on-surface-variant line-clamp-1">SQL & Cortex AI Plan</p>
+                        </div>
+                    </div>
+
+                    <!-- App 4: Business Operations -->
+                    <div class="app-tile group cursor-pointer p-3.5 rounded-2xl bg-surface-container/60 hover:bg-primary/10 border border-white/5 hover:border-primary/40 transition-all flex flex-col justify-between h-28" data-app-name="business operations hub efficiency" onclick="launchSuiteApp('business-ops')">
+                        <div class="flex justify-between items-start">
+                            <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-[20px]">domain</span>
+                            </div>
+                            <span class="text-[8px] font-mono bg-purple-500/10 text-purple-400 border border-purple-500/20 px-1.5 py-0.5 rounded-full font-bold">94.2% SLA</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white group-hover:text-purple-400 transition-colors">Business Ops</h4>
+                            <p class="text-[9px] text-on-surface-variant line-clamp-1">Ops & Bottlenecks</p>
+                        </div>
+                    </div>
+
+                    <!-- App 5: Live Activity Stream -->
+                    <div class="app-tile group cursor-pointer p-3.5 rounded-2xl bg-surface-container/60 hover:bg-primary/10 border border-white/5 hover:border-primary/40 transition-all flex flex-col justify-between h-28" data-app-name="live activity stream telemetry" onclick="launchSuiteApp('live-activity')">
+                        <div class="flex justify-between items-start">
+                            <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-[20px]">running_with_errors</span>
+                            </div>
+                            <span class="text-[8px] font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded-full font-bold animate-pulse">STREAMING</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white group-hover:text-amber-400 transition-colors">Live Activity</h4>
+                            <p class="text-[9px] text-on-surface-variant line-clamp-1">Telemetry Stream</p>
+                        </div>
+                    </div>
+
+                    <!-- App 6: Cortex AI Copilot -->
+                    <div class="app-tile group cursor-pointer p-3.5 rounded-2xl bg-surface-container/60 hover:bg-primary/10 border border-white/5 hover:border-primary/40 transition-all flex flex-col justify-between h-28" data-app-name="cortex ai copilot agent chat" onclick="launchSuiteApp('ai-agent')">
+                        <div class="flex justify-between items-start">
+                            <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-[20px]">smart_toy</span>
+                            </div>
+                            <span class="text-[8px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white group-hover:text-blue-400 transition-colors">Cortex Copilot</h4>
+                            <p class="text-[9px] text-on-surface-variant line-clamp-1">Autonomous Agent Chat</p>
+                        </div>
+                    </div>
+
+                    <!-- App 7: Anomaly Detector -->
+                    <div class="app-tile group cursor-pointer p-3.5 rounded-2xl bg-surface-container/60 hover:bg-primary/10 border border-white/5 hover:border-primary/40 transition-all flex flex-col justify-between h-28" data-app-name="anomaly detector alert monitoring" onclick="launchSuiteApp('anomalies')">
+                        <div class="flex justify-between items-start">
+                            <div class="w-9 h-9 rounded-xl bg-error/10 text-error flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-[20px]">error</span>
+                            </div>
+                            <span class="text-[8px] font-mono bg-error/10 text-error border border-error/20 px-1.5 py-0.5 rounded-full font-bold animate-pulse">2 ALERTS</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white group-hover:text-error transition-colors">Anomaly Detector</h4>
+                            <p class="text-[9px] text-on-surface-variant line-clamp-1">Telemetry Risk Scanner</p>
+                        </div>
+                    </div>
+
+                    <!-- App 8: Executive Dashboard -->
+                    <div class="app-tile group cursor-pointer p-3.5 rounded-2xl bg-surface-container/60 hover:bg-primary/10 border border-white/5 hover:border-primary/40 transition-all flex flex-col justify-between h-28" data-app-name="executive dashboard command center overview" onclick="launchSuiteApp('dashboard')">
+                        <div class="flex justify-between items-start">
+                            <div class="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-[20px]">space_dashboard</span>
+                            </div>
+                            <span class="text-[8px] font-mono bg-teal-500/10 text-teal-400 border border-teal-500/20 px-1.5 py-0.5 rounded-full font-bold">READY</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white group-hover:text-teal-400 transition-colors">Command Center</h4>
+                            <p class="text-[9px] text-on-surface-variant line-clamp-1">Executive KPIs & Charts</p>
+                        </div>
+                    </div>
+
+                    <!-- App 9: Audit & Governance -->
+                    <div class="app-tile group cursor-pointer p-3.5 rounded-2xl bg-surface-container/60 hover:bg-primary/10 border border-white/5 hover:border-primary/40 transition-all flex flex-col justify-between h-28" data-app-name="audit governance sec security sign" onclick="launchSuiteApp('audit-governance')">
+                        <div class="flex justify-between items-start">
+                            <div class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-[20px]">gavel</span>
+                            </div>
+                            <span class="text-[8px] font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-1.5 py-0.5 rounded-full font-bold">SECURED</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white group-hover:text-indigo-400 transition-colors">Governance</h4>
+                            <p class="text-[9px] text-on-surface-variant line-clamp-1">Policy & SEC Logs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- NOTIFICATIONS CENTER POPOVER -->
+        <!-- ========================================== -->
+        <div id="notificationsDropdown" class="fixed top-16 right-12 z-[10000] w-96 glass-panel-heavy rounded-2xl border border-white/10 shadow-2xl p-4 hidden transition-all duration-300 select-none bg-slate-950/95 space-y-3" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[20px]">notifications_active</span>
+                    <h3 class="text-xs font-bold text-white">Notifications Center</h3>
+                    <span id="notifBadgeHeader" class="bg-primary/20 text-primary text-[9px] font-bold px-2 py-0.5 rounded-full">3 New</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button class="text-[10px] text-primary hover:underline font-bold" onclick="markNotificationsRead()">Mark Read</button>
+                    <button class="text-[10px] text-on-surface-variant hover:text-white" onclick="clearAllNotifications()">Clear</button>
+                </div>
+            </div>
+
+            <div id="notifListContainer" class="space-y-2 max-h-80 overflow-y-auto custom-scrollbar text-xs">
+                <!-- Notification Item 1 -->
+                <div class="p-3 rounded-xl bg-error/10 border border-error/20 flex flex-col gap-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="bg-error text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase">CRITICAL ANOMALY</span>
+                        <span class="text-[9px] text-on-surface-variant font-mono">2m ago</span>
+                    </div>
+                    <h4 class="font-bold text-white text-[11px]">Duplicate Hashes in FINANCE.LEDGER</h4>
+                    <p class="text-[10px] text-on-surface-variant">12 rows exhibit duplicate cryptographic hashes. Cortex auto-fix recommended.</p>
+                    <button class="self-start mt-1 bg-error/20 hover:bg-error/30 text-error font-bold text-[10px] px-2.5 py-1 rounded-lg transition-all" onclick="launchSuiteApp('data-quality')">Open Data Quality</button>
+                </div>
+
+                <!-- Notification Item 2 -->
+                <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex flex-col gap-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="bg-amber-500 text-slate-950 text-[8px] font-black px-1.5 py-0.5 rounded uppercase">HUMAN GATE</span>
+                        <span class="text-[9px] text-on-surface-variant font-mono">14m ago</span>
+                    </div>
+                    <h4 class="font-bold text-white text-[11px]">Awaiting Approval: ₹12,40,000 PO</h4>
+                    <p class="text-[10px] text-on-surface-variant">Supplier B purchase order pending administrator authorization signature.</p>
+                    <button class="self-start mt-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 font-bold text-[10px] px-2.5 py-1 rounded-lg transition-all" onclick="launchSuiteApp('approvals')">Review Gate</button>
+                </div>
+
+                <!-- Notification Item 3 -->
+                <div class="p-3 rounded-xl bg-primary/10 border border-primary/20 flex flex-col gap-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="bg-primary text-on-secondary text-[8px] font-black px-1.5 py-0.5 rounded uppercase">QUERY OPTIMIZED</span>
+                        <span class="text-[9px] text-on-surface-variant font-mono">42m ago</span>
+                    </div>
+                    <h4 class="font-bold text-white text-[11px]">Query Studio Optimization Complete</h4>
+                    <p class="text-[10px] text-on-surface-variant">+48% runtime speedup achieved using zero-copy partition scan.</p>
+                </div>
+            </div>
+        </div>
 
         <!-- SIDEBAR NAVIGATION -->
         <!-- SIDEBAR NAVIGATION -->
@@ -2855,22 +3071,102 @@
             </section>
 
             <!-- 3I. LIVE ACTIVITY TAB VIEW -->
-            <section id="view-live-activity" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view">
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary text-[24px]">running_with_errors</span>
-                        Live Activity Stream
-                    </h1>
-                    <p class="text-xs text-on-surface-variant mt-1">Real-time trace logs detailing autonomous actions, warehouse scans, and execution logs.</p>
-                </div>
-                
-                <div class="glass-panel p-6 rounded-2xl flex flex-col gap-4">
-                    <div class="flex justify-between items-center border-b border-white/5 pb-3">
-                        <h3 class="text-xs font-bold text-white uppercase tracking-wider">Live Agent Telemetry Feed</h3>
-                        <span class="text-[9px] font-mono text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full animate-pulse">STREAMING LIVE</span>
+            <section id="view-live-activity" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view relative">
+                <!-- Header Toolbar -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[28px]">running_with_errors</span>
+                            Live Activity Stream & Telemetry
+                        </h1>
+                        <p class="text-xs text-on-surface-variant mt-1">Real-time event stream detailing agent reasoning steps, Snowflake transactions, and system telemetry.</p>
                     </div>
-                    <div class="space-y-3 font-code-sm text-xs max-h-[24rem] overflow-y-auto pr-2 custom-scrollbar" id="liveActivityLogContainer">
-                        <!-- Populated by app.js simulator -->
+                    <div class="flex items-center gap-3">
+                        <button id="toggleStreamPauseBtn" class="bg-primary/10 text-primary border border-primary/30 px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-primary/20 transition-all flex items-center gap-1.5" onclick="toggleLiveStreamPause()">
+                            <span class="material-symbols-outlined text-[16px]">pause_circle</span>
+                            <span id="streamPauseLabel">Pause Stream</span>
+                        </button>
+                        <button class="bg-surface-container border border-white/10 text-white font-semibold px-3 py-2 rounded-xl text-xs hover:border-white/30 transition-all flex items-center gap-1.5" onclick="clearLiveLogContainer()">
+                            <span class="material-symbols-outlined text-[16px]">clear_all</span>
+                            Clear Output
+                        </button>
+                        <button class="bg-surface-container border border-white/10 text-white font-semibold px-3 py-2 rounded-xl text-xs hover:border-white/30 transition-all flex items-center gap-1.5" onclick="downloadLogsCSV()">
+                            <span class="material-symbols-outlined text-[16px]">download</span>
+                            Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Stream Stats Header Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="glass-panel p-4 rounded-2xl border border-white/10 flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] font-mono text-on-surface-variant uppercase">Active Threads</span>
+                            <h3 class="text-xl font-bold text-white mt-0.5">16 Worker Nodes</h3>
+                        </div>
+                        <span class="material-symbols-outlined text-primary text-[24px]">memory</span>
+                    </div>
+
+                    <div class="glass-panel p-4 rounded-2xl border border-white/10 flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] font-mono text-on-surface-variant uppercase">Telemetry Throughput</span>
+                            <h3 class="text-xl font-bold text-emerald-400 mt-0.5">1.4K events/sec</h3>
+                        </div>
+                        <span class="material-symbols-outlined text-emerald-400 text-[24px]">speed</span>
+                    </div>
+
+                    <div class="glass-panel p-4 rounded-2xl border border-white/10 flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] font-mono text-on-surface-variant uppercase">Average Latency</span>
+                            <h3 class="text-xl font-bold text-secondary mt-0.5">18 ms</h3>
+                        </div>
+                        <span class="material-symbols-outlined text-secondary text-[24px]">bolt</span>
+                    </div>
+
+                    <div class="glass-panel p-4 rounded-2xl border border-white/10 flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] font-mono text-on-surface-variant uppercase">Queue Status</span>
+                            <h3 class="text-xl font-bold text-green-400 mt-0.5">0 Backlog</h3>
+                        </div>
+                        <span class="material-symbols-outlined text-green-400 text-[24px]">check_circle</span>
+                    </div>
+                </div>
+
+                <!-- Stream Logs Container Panel -->
+                <div class="glass-panel p-6 rounded-2xl border border-white/10 flex flex-col gap-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider">Live Agent & Warehouse Log Output</h3>
+                        </div>
+                        
+                        <!-- Log Severity Filter -->
+                        <div class="flex items-center gap-1 bg-surface-container p-1 rounded-xl border border-white/10 text-xs">
+                            <button id="logFilter-all" class="px-3 py-1 rounded-lg bg-primary/20 text-primary font-bold transition-all" onclick="filterLogSeverity('all')">All Logs</button>
+                            <button id="logFilter-error" class="px-3 py-1 rounded-lg text-on-surface-variant hover:text-white transition-all" onclick="filterLogSeverity('error')">Errors</button>
+                            <button id="logFilter-sql" class="px-3 py-1 rounded-lg text-on-surface-variant hover:text-white transition-all" onclick="filterLogSeverity('sql')">Snowflake SQL</button>
+                            <button id="logFilter-ai" class="px-3 py-1 rounded-lg text-on-surface-variant hover:text-white transition-all" onclick="filterLogSeverity('ai')">Cortex AI</button>
+                        </div>
+                    </div>
+
+                    <!-- Log Output Stream Area -->
+                    <div class="space-y-2 font-code-sm text-xs max-h-[30rem] overflow-y-auto pr-2 custom-scrollbar" id="liveActivityLogContainer">
+                        <!-- Initial Log Items -->
+                        <div class="flex items-start gap-3 p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all log-item log-item-info">
+                            <span class="text-on-surface-variant text-[10px] font-mono shrink-0 mt-0.5">14:50:12</span>
+                            <span class="bg-primary/20 text-primary font-bold text-[9px] px-2 py-0.5 rounded font-mono shrink-0">CORTEX_AI</span>
+                            <span class="text-slate-200">Autonomous supervisor scanning 12 Snowflake database schemas for micro-partition bottlenecks.</span>
+                        </div>
+                        <div class="flex items-start gap-3 p-2.5 rounded-xl bg-error/10 border border-error/20 hover:border-error/40 transition-all log-item log-item-error">
+                            <span class="text-on-surface-variant text-[10px] font-mono shrink-0 mt-0.5">14:50:14</span>
+                            <span class="bg-error text-white font-bold text-[9px] px-2 py-0.5 rounded font-mono shrink-0">ANOMALY_DETECT</span>
+                            <span class="text-white">Flagged 12 duplicate hashes in FINANCE.LEDGER transaction table. Remediation required.</span>
+                        </div>
+                        <div class="flex items-start gap-3 p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all log-item log-item-sql">
+                            <span class="text-on-surface-variant text-[10px] font-mono shrink-0 mt-0.5">14:50:18</span>
+                            <span class="bg-secondary/20 text-secondary font-bold text-[9px] px-2 py-0.5 rounded font-mono shrink-0">SNOWFLAKE_SQL</span>
+                            <span class="text-slate-200 font-mono">EXECUTED: SELECT * FROM STREAMS.LEADS WHERE score > 75 (142ms, 0.002 credits burned)</span>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -4136,19 +4432,129 @@
             </section>
 
             <!-- 3AE. BUSINESS OPERATIONS TAB VIEW -->
-            <section id="view-business-ops" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view">
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary text-[24px]">domain</span>
-                        Business Operations
-                    </h1>
-                    <p class="text-xs text-on-surface-variant mt-1">Operational bottlenecks analysis, downtime tracking, and efficiency optimization plans.</p>
+            <section id="view-business-ops" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view relative">
+                <!-- Header Toolbar -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[28px]">domain</span>
+                            Business Operations & Optimization Hub
+                        </h1>
+                        <p class="text-xs text-on-surface-variant mt-1">Monitor operating efficiency, automate bottleneck resolution, and streamline enterprise workflows.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button class="bg-primary text-on-secondary px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(0,229,195,0.25)]" onclick="runBusinessOpsScenario()">
+                            <span class="material-symbols-outlined text-[16px]">play_arrow</span>
+                            Run Ops Simulation
+                        </button>
+                        <button class="bg-surface-container border border-white/10 text-white font-semibold px-3.5 py-2 rounded-xl text-xs hover:border-white/30 transition-all flex items-center gap-1.5" onclick="switchTab('workflows')">
+                            <span class="material-symbols-outlined text-[16px]">account_tree</span>
+                            Visual Builder
+                        </button>
+                    </div>
                 </div>
-                
-                <div class="glass-panel p-6 rounded-2xl text-center space-y-3">
-                    <span class="material-symbols-outlined text-primary text-[42px] mx-auto opacity-70">gavel</span>
-                    <h3 class="text-sm font-bold text-white">Operations Auditing Active</h3>
-                    <p class="text-xs text-on-surface-variant max-w-sm mx-auto">Cortex Supervisor is actively scanning for duplicate transactions and scheduling cost optimizations.</p>
+
+                <!-- Top KPI Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="glass-panel p-4 rounded-2xl border border-white/10 flex justify-between items-center bg-gradient-to-br from-primary/5 to-transparent">
+                        <div>
+                            <span class="text-[10px] font-mono text-primary uppercase">Operating Efficiency</span>
+                            <h3 class="text-2xl font-black text-white mt-0.5">94.2%</h3>
+                            <span class="text-[10px] text-green-400 font-semibold flex items-center gap-1 mt-1">
+                                <span class="material-symbols-outlined text-[12px]">trending_up</span> +3.8% SLA Target
+                            </span>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined text-[24px]">speed</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-4 rounded-2xl border border-white/10 flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] font-mono text-on-surface-variant uppercase">Monthly Cost Savings</span>
+                            <h3 class="text-2xl font-black text-emerald-400 mt-0.5">₹14.8M</h3>
+                            <span class="text-[10px] text-on-surface-variant mt-1">Automated Warehouse Pruning</span>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                            <span class="material-symbols-outlined text-[24px]">savings</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-4 rounded-2xl border border-white/10 flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] font-mono text-on-surface-variant uppercase">Incident SLA MTTR</span>
+                            <h3 class="text-2xl font-black text-secondary mt-0.5">4.2 min</h3>
+                            <span class="text-[10px] text-green-400 mt-1">&lt; 15 min Goal</span>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary">
+                            <span class="material-symbols-outlined text-[24px]">timer</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-4 rounded-2xl border border-white/10 flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] font-mono text-on-surface-variant uppercase">Active Automations</span>
+                            <h3 class="text-2xl font-black text-white mt-0.5">18 Agents</h3>
+                            <span class="text-[10px] text-primary mt-1">Zero Downtime</span>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-tertiary-container/10 border border-tertiary-container/20 flex items-center justify-center text-tertiary-container">
+                            <span class="material-symbols-outlined text-[24px]">smart_toy</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operational Bottlenecks & Optimization Matrix -->
+                <div class="glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
+                    <div class="flex justify-between items-center border-b border-white/10 pb-3">
+                        <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[18px]">build</span>
+                            Operational Bottlenecks & Auto-Resolution Matrix
+                        </h3>
+                        <span class="text-[10px] font-mono text-primary font-bold">1 BOTTLENECK FLAGGED</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="text-[10px] font-bold text-on-surface-variant border-b border-white/10 uppercase tracking-wider">
+                                    <th class="pb-3 px-4">Operation Unit</th>
+                                    <th class="pb-3 px-4">Bottleneck Description</th>
+                                    <th class="pb-3 px-4">Impact / SLA Risk</th>
+                                    <th class="pb-3 px-4">Status</th>
+                                    <th class="pb-3 px-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="opsMatrixTableBody" class="divide-y divide-white/5">
+                                <tr>
+                                    <td class="py-3 px-4 font-bold text-white">INVENTORY_SUPPLY_CHAIN</td>
+                                    <td class="py-3 px-4 text-on-surface-variant">Product 'Wireless Headphones X1' safety stockout predicted in 68h.</td>
+                                    <td class="py-3 px-4 text-error font-mono font-bold">₹12,40,000 Stockout Risk</td>
+                                    <td class="py-3 px-4"><span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold">REMEDIATING</span></td>
+                                    <td class="py-3 px-4">
+                                        <button class="bg-primary text-on-secondary font-bold text-[11px] px-3 py-1 rounded-lg hover:bg-primary/80 transition-all" onclick="resolveOpsBottleneck('INVENTORY_SUPPLY_CHAIN')">Trigger PO Auto-Fix</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-bold text-white">PAYMENT_GATEWAY_STREAM</td>
+                                    <td class="py-3 px-4 text-on-surface-variant">High latency in Stripe transaction Webhook listener.</td>
+                                    <td class="py-3 px-4 text-on-surface-variant font-mono">1.2s Latency</td>
+                                    <td class="py-3 px-4"><span class="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold">HEALTHY</span></td>
+                                    <td class="py-3 px-4">
+                                        <button class="text-primary hover:underline font-semibold" onclick="resolveOpsBottleneck('PAYMENT_GATEWAY_STREAM')">Re-balance</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-bold text-white">SNOWFLAKE_WAREHOUSE_OPT</td>
+                                    <td class="py-3 px-4 text-on-surface-variant">COMPUTE_WH idle time exceeds threshold. Auto-suspend pending.</td>
+                                    <td class="py-3 px-4 text-on-surface-variant font-mono">0.04 Credits/hr</td>
+                                    <td class="py-3 px-4"><span class="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold">HEALTHY</span></td>
+                                    <td class="py-3 px-4">
+                                        <button class="text-primary hover:underline font-semibold" onclick="resolveOpsBottleneck('SNOWFLAKE_WAREHOUSE_OPT')">Suspend WH</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
