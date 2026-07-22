@@ -450,12 +450,14 @@
     <!-- ========================================== -->
     <!-- 1B. AUTHENTICATION / LOGIN LAYER -->
     <!-- ========================================== -->
-    <div id="authContainer" class="fixed inset-0 z-[15000] bg-[#08111F] flex items-center justify-center transition-all duration-1000 hidden-view opacity-0">
+    <div id="authContainer" class="fixed inset-0 z-[15000] bg-gradient-mesh-dark flex items-center justify-center transition-all duration-1000 hidden-view opacity-0 relative overflow-hidden">
         <!-- Floating Glow Orbs for Login Screen -->
-        <div class="absolute top-20 left-1/4 w-96 h-96 orb-glow rounded-full pointer-events-none opacity-25"></div>
-        <div class="absolute bottom-20 right-1/4 w-96 h-96 orb-glow rounded-full pointer-events-none opacity-20" style="filter:blur(80px);background:linear-gradient(135deg, #00E5C3 0%, #2D7FF9 100%)"></div>
+        <div class="pointer-events-none absolute inset-0 overflow-hidden z-0">
+            <div class="ambient-orb-1 absolute top-10 left-1/4 w-96 h-96 rounded-full bg-primary/20 blur-[120px]"></div>
+            <div class="ambient-orb-2 absolute bottom-10 right-1/4 w-[30rem] h-[30rem] rounded-full bg-secondary/20 blur-[140px]"></div>
+        </div>
 
-        <div class="glass-panel rounded-2xl w-full max-w-md p-8 border border-white/10 shadow-2xl relative z-10 flex flex-col gap-6 select-none">
+        <div class="glass-panel-heavy rounded-2xl w-full max-w-md p-8 border border-white/15 shadow-2xl relative z-10 flex flex-col gap-6 select-none modal-pop-anim">
             <!-- Header -->
             <div class="flex flex-col items-center gap-2">
                 <div class="w-12 h-12 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container shadow-[0_0_15px_rgba(0,229,195,0.4)]">
@@ -528,12 +530,14 @@
     <!-- ========================================== -->
     <!-- 1C. WORKSPACE / ENVIRONMENT SELECTION -->
     <!-- ========================================== -->
-    <div id="workspaceContainer" class="fixed inset-0 z-[14000] bg-[#08111F] flex items-center justify-center transition-all duration-1000 hidden-view opacity-0">
+    <div id="workspaceContainer" class="fixed inset-0 z-[14000] bg-gradient-mesh-dark flex items-center justify-center transition-all duration-1000 hidden-view opacity-0 relative overflow-hidden">
         <!-- Floating Glow Orbs for Environment Selection -->
-        <div class="absolute top-20 right-1/4 w-96 h-96 orb-glow rounded-full pointer-events-none opacity-20"></div>
-        <div class="absolute bottom-20 left-1/4 w-96 h-96 orb-glow rounded-full pointer-events-none opacity-20" style="filter:blur(80px);background:linear-gradient(135deg, #00E5C3 0%, #2D7FF9 100%)"></div>
+        <div class="pointer-events-none absolute inset-0 overflow-hidden z-0">
+            <div class="ambient-orb-1 absolute top-10 right-1/4 w-96 h-96 rounded-full bg-primary/20 blur-[120px]"></div>
+            <div class="ambient-orb-2 absolute bottom-10 left-1/4 w-[30rem] h-[30rem] rounded-full bg-secondary/20 blur-[140px]"></div>
+        </div>
 
-        <div class="glass-panel rounded-2xl w-full max-w-2xl p-8 border border-white/10 shadow-2xl relative z-10 flex flex-col gap-6 select-none font-body-base">
+        <div class="glass-panel-heavy rounded-2xl w-full max-w-2xl p-8 border border-white/15 shadow-2xl relative z-10 flex flex-col gap-6 select-none font-body-base modal-pop-anim">
             <!-- Header -->
             <div class="flex justify-between items-center border-b border-white/10 pb-4">
                 <div>
@@ -607,11 +611,16 @@
     </div>
 
     <!-- First-Time Onboarding Wizard Overlay -->
-    <div id="onboardingWizard" class="fixed inset-0 z-[20000] bg-[#101415] flex items-center justify-center transition-all duration-500 hidden-view" style="display:none;">
+    <div id="onboardingWizard" class="fixed inset-0 z-[20000] bg-gradient-mesh-dark flex items-center justify-center transition-all duration-500 hidden-view relative overflow-hidden" style="display:none;">
+        <!-- Ambient Glowing Background Orbs -->
+        <div class="pointer-events-none absolute inset-0 overflow-hidden z-0">
+            <div class="ambient-orb-1 absolute top-10 right-10 w-[30rem] h-[30rem] rounded-full bg-primary/20 blur-[130px]"></div>
+            <div class="ambient-orb-2 absolute bottom-10 left-10 w-[35rem] h-[35rem] rounded-full bg-secondary/20 blur-[140px]"></div>
+        </div>
         <!-- WebGL atmospheric backdrop inside wizard -->
-        <canvas id="onboardingGlCanvas" class="absolute inset-0 w-full h-full pointer-events-none opacity-20"></canvas>
+        <canvas id="onboardingGlCanvas" class="absolute inset-0 w-full h-full pointer-events-none opacity-20 z-0"></canvas>
         
-        <div class="glass-panel-heavy rounded-2xl w-full max-w-xl p-8 border border-primary/20 shadow-2xl relative z-10 flex flex-col gap-6 select-none max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div class="glass-panel-heavy rounded-2xl w-full max-w-xl p-8 border border-primary/30 shadow-2xl relative z-10 flex flex-col gap-6 select-none max-h-[90vh] overflow-y-auto custom-scrollbar modal-pop-anim">
             <!-- Header -->
             <div class="flex items-center justify-between border-b border-white/10 pb-4">
                 <div class="flex items-center gap-3 text-primary">

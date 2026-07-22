@@ -447,3 +447,84 @@ main, footer {
     animation: neonPulse 2.5s infinite;
 }
 
+/* ==========================================
+   END-TO-END ATMOSPHERIC MESH & MODAL ANIMATIONS
+   ========================================== */
+
+/* Animated Multi-Layered Radial Gradient Mesh Background */
+@keyframes meshShift {
+    0% { background-position: 0% 0%, 100% 100%, 50% 50%; }
+    50% { background-position: 100% 50%, 0% 50%, 100% 0%; }
+    100% { background-position: 0% 0%, 100% 100%, 50% 50%; }
+}
+.bg-gradient-mesh-dark {
+    background-color: #060911 !important;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(0, 229, 195, 0.18) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(124, 77, 255, 0.18) 0px, transparent 50%),
+        radial-gradient(at 50% 0%, rgba(2, 109, 231, 0.12) 0px, transparent 60%),
+        radial-gradient(at 100% 0%, rgba(0, 143, 122, 0.15) 0px, transparent 40%);
+    background-size: 180% 180%;
+    animation: meshShift 18s ease infinite;
+}
+
+/* Modal 3D Spring Bounce Entrance */
+@keyframes modalPopSpring {
+    0% {
+        opacity: 0;
+        transform: scale(0.92) translateY(20px);
+        filter: blur(10px);
+    }
+    70% {
+        transform: scale(1.01) translateY(-3px);
+        filter: blur(0px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        filter: blur(0px);
+    }
+}
+.modal-pop-anim {
+    animation: modalPopSpring 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Onboarding Step Card Slide & Cross-Fade Transition */
+@keyframes stepSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateX(25px) scale(0.97);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+.step-slide-anim {
+    animation: stepSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Section Ambient Color Glow Overlays */
+.section-bg-glow-dashboard {
+    background: radial-gradient(circle at 80% 20%, rgba(0, 229, 195, 0.08) 0%, transparent 60%);
+}
+.section-bg-glow-cli {
+    background: radial-gradient(circle at 20% 30%, rgba(0, 86, 179, 0.12) 0%, transparent 60%);
+}
+.section-bg-glow-workflows {
+    background: radial-gradient(circle at 70% 70%, rgba(124, 77, 255, 0.1) 0%, transparent 60%);
+}
+.section-bg-glow-anomalies {
+    background: radial-gradient(circle at 30% 20%, rgba(220, 53, 69, 0.1) 0%, transparent 60%);
+}
+.section-bg-glow-analytics {
+    background: radial-gradient(circle at 50% 50%, rgba(112, 255, 224, 0.08) 0%, transparent 60%);
+}
+
+/* Form Input Glow on Focus */
+.input-glow-focus:focus {
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 12px rgba(0, 229, 195, 0.25) !important;
+    background-color: rgba(255, 255, 255, 0.04) !important;
+}
+

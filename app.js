@@ -350,7 +350,12 @@ function nextOnboardingStep() {
     currentOnboardingStep++;
     
     const nextCard = document.getElementById(`onboardingStep-${currentOnboardingStep}`);
-    if (nextCard) nextCard.classList.remove('hidden');
+    if (nextCard) {
+        nextCard.classList.remove('hidden');
+        nextCard.classList.remove('step-slide-anim');
+        void nextCard.offsetWidth;
+        nextCard.classList.add('step-slide-anim');
+    }
     
     // Update step count badge
     const badge = document.getElementById('onboardingStepBadge');
@@ -405,7 +410,12 @@ function prevOnboardingStep() {
     currentOnboardingStep--;
     
     const prevCard = document.getElementById(`onboardingStep-${currentOnboardingStep}`);
-    if (prevCard) prevCard.classList.remove('hidden');
+    if (prevCard) {
+        prevCard.classList.remove('hidden');
+        prevCard.classList.remove('step-slide-anim');
+        void prevCard.offsetWidth;
+        prevCard.classList.add('step-slide-anim');
+    }
     
     const badge = document.getElementById('onboardingStepBadge');
     if (badge) badge.innerText = `Step ${currentOnboardingStep} of 6`;
