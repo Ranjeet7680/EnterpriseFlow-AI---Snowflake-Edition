@@ -57,6 +57,14 @@ Built with rich aesthetics, crystalline glassmorphism, responsive grids, and atm
 ### 8. Voice AI Helper
 *   Click "Voice AI Helper" in the footer to toggle the microphone. Active state triggers a glowing canvas wave visualizer that animates voice wave bars up and down.
 
+### 9. Cortex Code CLI Studio & End-to-End Workflow Engine
+*   **Interactive Shell & Screen Recording Simulator**: Visual CLI terminal interface running automated end-to-end workflow screen recordings demonstrating **Input → Processing → Output**.
+*   **Modular Skills Demonstrated**:
+    1. `cortex-sql-opt`: Autonomous SQL query analysis, zero-copy micro-partitioning, and runtime optimization (+48% speedup).
+    2. `cortex-anomaly-detect`: Real-time 24-hour telemetry scanning identifying financial transaction spikes ($12,000 threshold).
+    3. `cortex-slack-notify`: Governance approval gate authentication and instant Slack webhook dispatching.
+*   **Interactive Command Line**: Enter live commands (`cortex run`, `cortex skills`, `cortex status`, `cortex help`) directly into the embedded CLI prompt.
+
 ---
 
 ## 🛠️ Technology Stack

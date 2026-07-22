@@ -593,6 +593,8 @@ function switchTab(tabId) {
         renderReferralDashboard();
     } else if (tabId === 'admin-referrals') {
         renderAdminReferralDashboard();
+    } else if (tabId === 'cortex-cli') {
+        initCortexCliView();
     }
 }
 
@@ -2141,39 +2143,6 @@ function cleanSimulationState() {
     }
 }
 
-// Custom Toast Alerts builder
-function showSlackToast(text) {
-    const container = document.getElementById('toastContainer');
-    if (!container) return;
-    
-    const toastId = 'toast-' + Date.now();
-    const html = `
-        <div id="${toastId}" class="slack-toast pointer-events-auto bg-[#1A1D21] border border-[#E8912D]/30 p-4 rounded-xl shadow-2xl flex gap-3 max-w-sm">
-            <div class="w-8 h-8 rounded bg-[#E8912D]/10 flex items-center justify-center text-[#E8912D] shrink-0">
-                <span class="material-symbols-outlined text-[18px]">chat_bubble</span>
-            </div>
-            <div class="flex-1">
-                <div class="flex justify-between items-center gap-4">
-                    <span class="text-[10px] font-bold text-[#E8912D] uppercase tracking-wider">Slack Alert Dispatched</span>
-                    <span class="text-[9px] text-on-surface-variant font-code-sm">Just now</span>
-                </div>
-                <p class="text-xs text-white mt-1 leading-relaxed">${text}</p>
-            </div>
-        </div>
-    `;
-    
-    container.insertAdjacentHTML('beforeend', html);
-    
-    // Automatically remove toast after 5 seconds
-    setTimeout(() => {
-        const toast = document.getElementById(toastId);
-        if (toast) {
-            toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.5s';
-            setTimeout(() => toast.remove(), 500);
-        }
-    }, 5000);
-}
 
 // Enter operations dashboard workspace from welcome screen
 function enterWorkspace() {
@@ -3545,4 +3514,224 @@ function triggerReferralOnboardingDemo() {
             }, 3000);
         }, 2000);
     }, 2000);
+}
+
+// ==========================================
+// CORTEX CODE CLI STUDIO & SIMULATOR
+// ==========================================
+let cliSpeedMultiplier = 1;
+let cliExecutionTimer = null;
+let isCliRunning = false;
+
+function toggleCliSpeed(speed) {
+    cliSpeedMultiplier = speed;
+    const btn1 = document.getElementById('cli-speed-1');
+    const btn2 = document.getElementById('cli-speed-2');
+    if (speed === 1) {
+        if (btn1) btn1.className = 'px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/10 text-white cursor-pointer';
+        if (btn2) btn2.className = 'px-1.5 py-0.5 rounded text-[10px] font-mono bg-transparent text-on-surface-variant hover:text-white cursor-pointer';
+    } else {
+        if (btn1) btn1.className = 'px-1.5 py-0.5 rounded text-[10px] font-mono bg-transparent text-on-surface-variant hover:text-white cursor-pointer';
+        if (btn2) btn2.className = 'px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/10 text-white cursor-pointer';
+    }
+}
+
+function clearCortexTerminal() {
+    if (cliExecutionTimer) clearTimeout(cliExecutionTimer);
+    isCliRunning = false;
+    const term = document.getElementById('cortexTerminalOutput');
+    if (term) {
+        term.innerHTML = `
+            <div class="text-slate-500 italic pb-2"># Snowflake Cortex Code CLI v2.4 (Session: sf_session_88921)</div>
+            <div class="text-slate-400">Type <span class="text-secondary font-bold">cortex help</span> or click <span class="text-primary font-bold">Play Screen Recording Workflow</span> to launch the end-to-end multi-skill simulation.</div>
+            <div class="pt-2 text-xs text-slate-500 font-mono">Available modular skills: <span class="text-secondary">[cortex-sql-opt]</span> <span class="text-primary">[cortex-anomaly-detect]</span> <span class="text-tertiary">[cortex-slack-notify]</span></div>
+        `;
+    }
+    updateCliPhaseHighlight('reset');
+}
+
+function initCortexCliView() {
+    const term = document.getElementById('cortexTerminalOutput');
+    if (term && (term.children.length === 0 || term.innerHTML.trim() === '')) {
+        clearCortexTerminal();
+    }
+}
+
+function updateCliPhaseHighlight(phase) {
+    const pInput = document.getElementById('cli-phase-input');
+    const pProc = document.getElementById('cli-phase-processing');
+    const pOut = document.getElementById('cli-phase-output');
+    
+    [pInput, pProc, pOut].forEach(el => {
+        if (el) {
+            el.classList.remove('ring-2', 'ring-secondary', 'ring-primary', 'ring-tertiary', 'bg-secondary/10', 'bg-primary/10', 'bg-tertiary/10');
+        }
+    });
+
+    if (phase === 'input' && pInput) {
+        pInput.classList.add('ring-2', 'ring-secondary', 'bg-secondary/10');
+    } else if (phase === 'processing' && pProc) {
+        pProc.classList.add('ring-2', 'ring-primary', 'bg-primary/10');
+    } else if (phase === 'output' && pOut) {
+        pOut.classList.add('ring-2', 'ring-tertiary', 'bg-tertiary/10');
+    }
+}
+
+function appendCliLine(htmlContent, delay = 0, callback = null) {
+    const delayTime = (delay / cliSpeedMultiplier);
+    cliExecutionTimer = setTimeout(() => {
+        const term = document.getElementById('cortexTerminalOutput');
+        if (term) {
+            const line = document.createElement('div');
+            line.innerHTML = htmlContent;
+            term.appendChild(line);
+            term.scrollTop = term.scrollHeight;
+        }
+        if (callback) callback();
+    }, delayTime);
+}
+
+function startCortexCliRecording() {
+    if (isCliRunning) return;
+    isCliRunning = true;
+    
+    const term = document.getElementById('cortexTerminalOutput');
+    if (term) term.innerHTML = '';
+    
+    updateCliPhaseHighlight('input');
+    showSlackToast("🎬 Playing Cortex Code CLI End-to-End Screen Recording...");
+    
+    // Screen recording script steps (Input -> Processing -> Output)
+    appendCliLine(`<div class="text-slate-500 border-b border-white/10 pb-1 flex justify-between"><span>[RECORDING PLAYBACK] Session: CLI_REC_2026_0722</span><span class="text-secondary">● LIVE STREAM</span></div>`, 100);
+    
+    // Step 1: Input
+    appendCliLine(`<div class="pt-2 text-secondary font-bold flex items-center gap-2"><span class="material-symbols-outlined text-sm">terminal</span> cortex@snowflake:~$ <span class="text-white font-mono typing-anim">cortex workflow run --config pipeline_prod.json --skills query-opt,anomaly-detect,slack-notify --target SF_WH_ANALYTICS</span></div>`, 600, () => {
+        updateCliPhaseHighlight('input');
+    });
+
+    appendCliLine(`<div class="text-slate-400 pl-4">→ Parsing workflow specification: <span class="text-slate-200">pipeline_prod.json</span></div>`, 1200);
+    appendCliLine(`<div class="text-slate-400 pl-4">→ Context loaded: <span class="text-emerald-400 font-bold">Snowflake Account: SF_EAST_01</span> | Role: <span class="text-emerald-400 font-bold">CORTEX_ADMIN</span></div>`, 1600);
+    
+    // Step 2: Processing (Modular Skills)
+    appendCliLine(`<div class="pt-3 text-primary font-bold flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-primary animate-ping"></span> [PHASE 2: PROCESSING] Invoking 3 Modular Skills...</div>`, 2400, () => {
+        updateCliPhaseHighlight('processing');
+    });
+
+    // Skill 1: SQL Opt
+    appendCliLine(`<div class="pl-4 border-l-2 border-secondary/50 my-1 py-1 bg-secondary/5 rounded-r">
+        <div class="text-secondary font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-xs">auto_fix_high</span> Skill #1: cortex-sql-opt</div>
+        <div class="text-slate-300">Scanning table schema <span class="text-amber-300 font-mono">OPERATIONS.CONVERSIONS</span> (1.4M rows)...</div>
+        <div class="text-slate-400 text-[11px]">Analyzing full table scans → Recommended micro-partitioning key: <span class="text-emerald-400 font-mono">(CREATED_AT, CUSTOMER_ID)</span></div>
+        <div class="text-emerald-400 text-[11px] font-bold">✔ Generated optimized SQL script (Estimated runtime reduction: 48%)</div>
+    </div>`, 3400);
+
+    // Skill 2: Anomaly Detection
+    appendCliLine(`<div class="pl-4 border-l-2 border-primary/50 my-1 py-1 bg-primary/5 rounded-r">
+        <div class="text-primary font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-xs">radar</span> Skill #2: cortex-anomaly-detect</div>
+        <div class="text-slate-300">Evaluating telemetry metrics over rolling 24-hour window...</div>
+        <div class="text-amber-400 text-[11px]">⚠ Anomaly Flagged: Spike detected in high-value checkout transactions ($12,000 threshold exceeded).</div>
+        <div class="text-slate-400 text-[11px]">Cortex Reasoner Confidence: <span class="text-primary font-bold">95.4%</span> (Flagged for mandatory Governance Gate approval).</div>
+    </div>`, 4800);
+
+    // Skill 3: Gate Interrupt & Slack Notify
+    appendCliLine(`<div class="pl-4 border-l-2 border-tertiary/50 my-1 py-1 bg-tertiary/5 rounded-r">
+        <div class="text-tertiary font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-xs">gate</span> Skill #3: cortex-slack-notify</div>
+        <div class="text-slate-300">Executing Governance Gate verification interrupt...</div>
+        <div class="text-emerald-400 text-[11px]">✔ Automatic signature match: ADM_CORTEX token verified.</div>
+        <div class="text-sky-300 text-[11px] font-mono flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">send</span> Webhook sent to #ops-alerts: "High-value lead $12,000 processed & optimized via Cortex CLI."
+        </div>
+    </div>`, 6200);
+
+    // Step 3: Output Matrix
+    appendCliLine(`<div class="pt-3 text-tertiary font-bold flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-tertiary"></span> [PHASE 3: OUTPUT RESULT] Pipeline Execution Completed Successfully</div>`, 7400, () => {
+        updateCliPhaseHighlight('output');
+    });
+
+    appendCliLine(`<div class="bg-black/40 border border-emerald-500/30 p-3 rounded-xl font-mono text-[11px] space-y-1 my-2">
+        <div class="text-emerald-400 font-bold flex justify-between"><span>STATUS: WORKFLOW_SUCCESS</span> <span>DURATION: 2.14s</span></div>
+        <div class="text-slate-300">Rows Processed: <span class="text-white font-bold">1,420,890</span> | Credits Saved: <span class="text-emerald-400 font-bold">1.50/hr</span></div>
+        <div class="text-slate-300">Execution Plan Hash: <span class="text-slate-400">0x889f2a991bce42</span></div>
+        <div class="text-slate-400 pt-1 text-[10px]">Output JSON saved to: <span class="text-secondary font-mono">/var/cortex/runs/run_20260722_01.json</span></div>
+    </div>`, 8200, () => {
+        isCliRunning = false;
+        showSlackToast("✅ Cortex Code CLI workflow execution completed with 3 modular skills verified!");
+    });
+}
+
+function runSkillDemo(skillType) {
+    if (isCliRunning) return;
+    isCliRunning = true;
+    
+    const term = document.getElementById('cortexTerminalOutput');
+    if (term) term.innerHTML = '';
+    
+    if (skillType === 'query-opt') {
+        updateCliPhaseHighlight('input');
+        appendCliLine(`<div class="text-secondary font-bold">$ cortex skill exec --name cortex-sql-opt --target OPERATIONS.CONVERSIONS</div>`, 200);
+        appendCliLine(`<div class="text-slate-400 pl-3">Phase 1 Input: Directing query analyzer to scan missing indexes...</div>`, 800, () => updateCliPhaseHighlight('processing'));
+        appendCliLine(`<div class="text-slate-200 pl-3">Phase 2 Processing: Rewriting SELECT queries with zero-copy micro-partitions.</div>`, 1600);
+        appendCliLine(`<div class="text-emerald-400 font-bold pl-3">Phase 3 Output: Query latency improved by 48.2%. Saved 124 credits/month.</div>`, 2400, () => {
+            updateCliPhaseHighlight('output');
+            isCliRunning = false;
+        });
+    } else if (skillType === 'anomaly-detect') {
+        updateCliPhaseHighlight('input');
+        appendCliLine(`<div class="text-primary font-bold">$ cortex skill exec --name cortex-anomaly-detect --window 24h</div>`, 200);
+        appendCliLine(`<div class="text-slate-400 pl-3">Phase 1 Input: Fetching 24-hour telemetry log vectors...</div>`, 800, () => updateCliPhaseHighlight('processing'));
+        appendCliLine(`<div class="text-slate-200 pl-3">Phase 2 Processing: Running Cortex Isolation Forest model on warehouse metrics...</div>`, 1600);
+        appendCliLine(`<div class="text-amber-400 font-bold pl-3">Phase 3 Output: Detected 1 transaction spike anomaly ($12,000 threshold). Confidence 95.4%.</div>`, 2400, () => {
+            updateCliPhaseHighlight('output');
+            isCliRunning = false;
+        });
+    } else if (skillType === 'slack-notify') {
+        updateCliPhaseHighlight('input');
+        appendCliLine(`<div class="text-tertiary font-bold">$ cortex skill exec --name cortex-slack-notify --channel #ops-alerts</div>`, 200);
+        appendCliLine(`<div class="text-slate-400 pl-3">Phase 1 Input: Constructing Slack block kit payload...</div>`, 800, () => updateCliPhaseHighlight('processing'));
+        appendCliLine(`<div class="text-slate-200 pl-3">Phase 2 Processing: Authenticating ADM_CORTEX gate signature...</div>`, 1600);
+        appendCliLine(`<div class="text-sky-300 font-bold pl-3">Phase 3 Output: Slack Webhook HTTP 200 OK. Notification delivered to #ops-alerts.</div>`, 2400, () => {
+            updateCliPhaseHighlight('output');
+            isCliRunning = false;
+        });
+    }
+}
+
+function sendCortexCliCommand() {
+    const input = document.getElementById('cortexCliInput');
+    if (!input || !input.value.trim()) return;
+    const cmd = input.value.trim();
+    input.value = '';
+    
+    if (isCliRunning) return;
+    
+    const term = document.getElementById('cortexTerminalOutput');
+    if (term) {
+        const cmdLine = document.createElement('div');
+        cmdLine.className = 'pt-2 text-secondary font-bold flex items-center gap-2';
+        cmdLine.innerHTML = `<span class="material-symbols-outlined text-sm">terminal</span> cortex@snowflake:~$ <span class="text-white">${cmd}</span>`;
+        term.appendChild(cmdLine);
+        term.scrollTop = term.scrollHeight;
+    }
+    
+    const lower = cmd.toLowerCase();
+    if (lower === 'cortex run' || lower === 'cortex workflow run') {
+        startCortexCliRecording();
+    } else if (lower.includes('skill')) {
+        appendCliLine(`<div class="text-slate-300 pl-3 pt-1">Installed Cortex Modular Skills:</div>
+            <div class="text-secondary pl-5">• cortex-sql-opt (SQL Optimization & Micro-partitioning)</div>
+            <div class="text-primary pl-5">• cortex-anomaly-detect (Warehouse Telemetry Anomaly Detection)</div>
+            <div class="text-tertiary pl-5">• cortex-slack-notify (Governance Gate & Webhook Alerts)</div>`, 300);
+    } else if (lower === 'cortex help' || lower === 'help') {
+        appendCliLine(`<div class="text-slate-300 pl-3 pt-1">Cortex Code CLI Commands:</div>
+            <div class="text-slate-400 pl-5"><span class="text-secondary font-bold">cortex run</span> - Execute multi-skill end-to-end workflow recording</div>
+            <div class="text-slate-400 pl-5"><span class="text-secondary font-bold">cortex skills</span> - List registered modular capabilities</div>
+            <div class="text-slate-400 pl-5"><span class="text-secondary font-bold">cortex status</span> - Display active Snowflake Cortex cluster metrics</div>
+            <div class="text-slate-400 pl-5"><span class="text-secondary font-bold">clear</span> - Reset terminal window</div>`, 300);
+    } else if (lower === 'cortex status' || lower === 'status') {
+        appendCliLine(`<div class="text-emerald-400 font-mono pl-3 pt-1">Snowflake Cortex Engine: ONLINE | Cluster: SF_EAST_01 | Active Agents: 4</div>`, 300);
+    } else if (lower === 'clear') {
+        clearCortexTerminal();
+    } else {
+        appendCliLine(`<div class="text-amber-400 pl-3 pt-1">cortex: command not recognized. Type <span class="text-white font-bold">cortex help</span> or <span class="text-secondary font-bold">cortex run</span>.</div>`, 300);
+    }
 }

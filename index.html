@@ -953,6 +953,10 @@
                             <span class="material-symbols-outlined text-[15px]">construction</span>
                             <span class="nav-text">Agent Skills</span>
                         </a>
+                        <a href="#" data-view="cortex-cli" class="flex items-center gap-2.5 px-3 py-1.5 text-xs text-on-surface-variant hover:text-primary transition-all rounded-lg" onclick="switchTab('cortex-cli')">
+                            <span class="material-symbols-outlined text-[15px] text-secondary">terminal</span>
+                            <span class="nav-text">Cortex Code CLI</span>
+                        </a>
                     </div>
                 </div>
 
@@ -1769,6 +1773,158 @@
                         <input type="text" id="aiChatInput" placeholder="Message Cortex Agent... (e.g. Optimize Snowflake leads query)" class="flex-1 bg-background/50 border border-white/10 rounded-xl px-5 py-3 text-xs text-white focus:border-primary focus:ring-0 focus:outline-none transition-colors" onkeydown="if(event.key==='Enter') sendChatMessage()"/>
                         <button class="bg-primary hover:bg-primary-dim text-on-secondary px-5 py-3 rounded-xl text-xs font-bold active:scale-[0.98] transition-all flex items-center gap-1.5" onclick="sendChatMessage()">
                             Send <span class="material-symbols-outlined text-[16px]">send</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CORTEX CODE CLI STUDIO VIEW -->
+            <section id="view-cortex-cli" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view">
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <span class="p-2.5 bg-secondary/10 border border-secondary/30 rounded-xl text-secondary material-symbols-outlined text-2xl">terminal</span>
+                            <div>
+                                <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                                    Cortex Code CLI Studio
+                                    <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded bg-secondary/20 text-secondary border border-secondary/30">Modular Skills Engine</span>
+                                </h1>
+                                <p class="text-xs text-on-surface-variant mt-0.5">End-to-End Snowflake AI workflow execution engine demonstrating Input → Processing → Output pipeline with automated skill orchestration.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="bg-secondary text-background font-bold px-4 py-2.5 rounded-xl text-xs hover:bg-secondary-dim transition-all flex items-center gap-2 shadow-lg shadow-secondary/20 cursor-pointer" onclick="startCortexCliRecording()">
+                            <span class="material-symbols-outlined text-[18px]">play_circle</span>
+                            Play Screen Recording Workflow
+                        </button>
+                        <button class="bg-surface-variant/40 hover:bg-surface-variant text-white border border-white/10 px-3.5 py-2.5 rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer" onclick="clearCortexTerminal()">
+                            <span class="material-symbols-outlined text-[16px]">restart_alt</span>
+                            Reset CLI
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Workflow Execution Phase Bar: Input -> Processing -> Output -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div id="cli-phase-input" class="p-4 rounded-xl border border-white/10 bg-surface/30 backdrop-blur-md transition-all">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-secondary flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                                Phase 1: Input Trigger
+                            </span>
+                            <span class="text-[10px] font-mono bg-secondary/10 text-secondary border border-secondary/20 px-2 py-0.5 rounded">CLI Command & Skills</span>
+                        </div>
+                        <h4 class="text-sm font-semibold text-white">Cortex CLI Command Invocation</h4>
+                        <p class="text-xs text-on-surface-variant mt-1">Defines pipeline configuration, registers target Snowflake warehouse, and passes modular skill flags.</p>
+                    </div>
+
+                    <div id="cli-phase-processing" class="p-4 rounded-xl border border-white/10 bg-surface/30 backdrop-blur-md transition-all">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-primary"></span>
+                                Phase 2: Autonomous Processing
+                            </span>
+                            <span class="text-[10px] font-mono bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded">Cortex LLM & Gates</span>
+                        </div>
+                        <h4 class="text-sm font-semibold text-white">Parallel Skill Execution</h4>
+                        <p class="text-xs text-on-surface-variant mt-1">Cortex AI reasons through schema transforms, detects anomalies, and enforces governance gate checks.</p>
+                    </div>
+
+                    <div id="cli-phase-output" class="p-4 rounded-xl border border-white/10 bg-surface/30 backdrop-blur-md transition-all">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-tertiary flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-tertiary"></span>
+                                Phase 3: Verified Output
+                            </span>
+                            <span class="text-[10px] font-mono bg-tertiary/10 text-tertiary border border-tertiary/20 px-2 py-0.5 rounded">SQL Commit & Slack Alert</span>
+                        </div>
+                        <h4 class="text-sm font-semibold text-white">Action Matrix & Telemetry</h4>
+                        <p class="text-xs text-on-surface-variant mt-1">Commits zero-copy clones, outputs execution JSON summary, and dispatches real-time Slack webhooks.</p>
+                    </div>
+                </div>
+
+                <!-- 3 Modular Skills Cards -->
+                <div>
+                    <h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">Demonstrated Modular Skills & Capabilities</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-4 rounded-xl border border-white/10 bg-surface/40 hover:border-secondary/40 transition-all cursor-pointer group" onclick="runSkillDemo('query-opt')">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="p-2 bg-secondary/10 text-secondary rounded-lg material-symbols-outlined text-lg group-hover:scale-110 transition-transform">auto_fix_high</span>
+                                <span class="text-[9px] font-mono text-secondary bg-secondary/10 px-2 py-0.5 rounded-full border border-secondary/20">Skill #1</span>
+                            </div>
+                            <h4 class="text-sm font-bold text-white">cortex-sql-opt</h4>
+                            <p class="text-xs text-on-surface-variant mt-1">Autonomous SQL rewriting, micro-partitioning recommendation, and warehouse cluster tuning.</p>
+                            <div class="mt-3 flex items-center text-[10px] text-secondary font-semibold gap-1">
+                                Execute Skill Solo <span class="material-symbols-outlined text-xs group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl border border-white/10 bg-surface/40 hover:border-primary/40 transition-all cursor-pointer group" onclick="runSkillDemo('anomaly-detect')">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="p-2 bg-primary/10 text-primary rounded-lg material-symbols-outlined text-lg group-hover:scale-110 transition-transform">radar</span>
+                                <span class="text-[9px] font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">Skill #2</span>
+                            </div>
+                            <h4 class="text-sm font-bold text-white">cortex-anomaly-detect</h4>
+                            <p class="text-xs text-on-surface-variant mt-1">Real-time scan of database transactions to flag latency spikes, schema changes, and high credit burn.</p>
+                            <div class="mt-3 flex items-center text-[10px] text-primary font-semibold gap-1">
+                                Execute Skill Solo <span class="material-symbols-outlined text-xs group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl border border-white/10 bg-surface/40 hover:border-tertiary/40 transition-all cursor-pointer group" onclick="runSkillDemo('slack-notify')">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="p-2 bg-tertiary/10 text-tertiary rounded-lg material-symbols-outlined text-lg group-hover:scale-110 transition-transform">gate</span>
+                                <span class="text-[9px] font-mono text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full border border-tertiary/20">Skill #3</span>
+                            </div>
+                            <h4 class="text-sm font-bold text-white">cortex-slack-notify</h4>
+                            <p class="text-xs text-on-surface-variant mt-1">Governance approval gate interception, administrator authentication signature, and Slack dispatch.</p>
+                            <div class="mt-3 flex items-center text-[10px] text-tertiary font-semibold gap-1">
+                                Execute Skill Solo <span class="material-symbols-outlined text-xs group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Terminal Shell & Screen Recording Container -->
+                <div class="rounded-2xl border border-white/15 bg-[#0a0d14] overflow-hidden shadow-2xl">
+                    <!-- Terminal Top Bar -->
+                    <div class="px-4 py-3 bg-[#111622] border-b border-white/10 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                            <span class="ml-2 text-xs font-mono text-on-surface-variant flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-sm text-secondary">terminal</span>
+                                Cortex Code CLI v2.4 (Snowflake Cloud OS)
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-1 text-[10px] font-mono text-on-surface-variant">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                SF_EAST_01 (CORTEX_ADMIN)
+                            </div>
+                            <div class="h-3 w-[1px] bg-white/10"></div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-[10px] font-mono text-on-surface-variant">Speed:</span>
+                                <button class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/10 text-white cursor-pointer" onclick="toggleCliSpeed(1)" id="cli-speed-1">1x</button>
+                                <button class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-transparent text-on-surface-variant hover:text-white cursor-pointer" onclick="toggleCliSpeed(2)" id="cli-speed-2">2x</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Screen Recording Visual Stream Display -->
+                    <div id="cortexTerminalOutput" class="p-5 font-mono text-xs text-slate-200 min-h-[380px] max-h-[500px] overflow-y-auto space-y-2 select-text leading-relaxed bg-[#080b11]">
+                        <!-- Content populated dynamically -->
+                    </div>
+
+                    <!-- Terminal Interactive Command Input Line -->
+                    <div class="p-3 bg-[#0f1420] border-t border-white/10 flex items-center gap-2">
+                        <span class="text-secondary font-mono font-bold text-xs">cortex@snowflake:~$</span>
+                        <input type="text" id="cortexCliInput" placeholder="Type CLI command (e.g. cortex run, cortex skills, cortex help)..." class="flex-1 bg-transparent border-0 font-mono text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-0" onkeydown="if(event.key==='Enter') sendCortexCliCommand()"/>
+                        <button class="bg-secondary/20 text-secondary border border-secondary/30 px-3 py-1 rounded-lg text-xs font-mono hover:bg-secondary/30 transition-all flex items-center gap-1 cursor-pointer" onclick="sendCortexCliCommand()">
+                            Run <span class="material-symbols-outlined text-[14px]">subdirectory_arrow_left</span>
                         </button>
                     </div>
                 </div>
