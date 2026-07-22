@@ -3748,3 +3748,35 @@ function sendCortexCliCommand() {
         appendCliLine(`<div class="text-amber-400 pl-3 pt-1">cortex: command not recognized. Type <span class="text-white font-bold">cortex help</span> or <span class="text-secondary font-bold">cortex run</span>.</div>`, 300);
     }
 }
+
+// ==========================================
+// DOCUMENTATION & SUPPORT HANDLERS
+// ==========================================
+function copyCodeSnippet(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const text = el.innerText || el.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        showSlackToast("📋 Code snippet copied to clipboard!");
+    });
+}
+
+function submitSupportTicket() {
+    const name = document.getElementById('suppName')?.value || 'User';
+    const email = document.getElementById('suppEmail')?.value || '';
+    const moduleName = document.getElementById('suppModule')?.value || 'General';
+    const priority = document.getElementById('suppPriority')?.value || 'medium';
+    const message = document.getElementById('suppMessage')?.value;
+
+    if (!message || !message.trim()) {
+        showSlackToast("⚠️ Please enter an issue description before submitting.");
+        return;
+    }
+
+    const ticketId = 'TCK-' + Math.floor(100000 + Math.random() * 900000);
+    showSlackToast(`✅ Support Ticket ${ticketId} created! Assigned to Enterprise Oncall Engineer.`);
+    
+    const msgInput = document.getElementById('suppMessage');
+    if (msgInput) msgInput.value = '';
+}
+

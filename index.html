@@ -450,7 +450,7 @@
     <!-- ========================================== -->
     <!-- 1B. AUTHENTICATION / LOGIN LAYER -->
     <!-- ========================================== -->
-    <div id="authContainer" class="fixed inset-0 z-[15000] bg-gradient-mesh-dark flex items-center justify-center transition-all duration-1000 hidden-view opacity-0 relative overflow-hidden">
+    <div id="authContainer" class="fixed inset-0 min-h-screen h-screen w-screen z-[15000] bg-gradient-mesh-dark flex flex-col items-center justify-center transition-all duration-1000 hidden-view opacity-0 relative overflow-hidden p-4" style="background-image: linear-gradient(to bottom, rgba(6, 9, 17, 0.85), rgba(6, 9, 17, 0.92)), url('cortex_neural_bg.jpg'); background-size: cover; background-position: center;">
         <!-- Floating Glow Orbs for Login Screen -->
         <div class="pointer-events-none absolute inset-0 overflow-hidden z-0">
             <div class="ambient-orb-1 absolute top-10 left-1/4 w-96 h-96 rounded-full bg-primary/20 blur-[120px]"></div>
@@ -530,7 +530,7 @@
     <!-- ========================================== -->
     <!-- 1C. WORKSPACE / ENVIRONMENT SELECTION -->
     <!-- ========================================== -->
-    <div id="workspaceContainer" class="fixed inset-0 z-[14000] bg-gradient-mesh-dark flex items-center justify-center transition-all duration-1000 hidden-view opacity-0 relative overflow-hidden">
+    <div id="workspaceContainer" class="fixed inset-0 min-h-screen h-screen w-screen z-[14000] bg-gradient-mesh-dark flex flex-col items-center justify-center transition-all duration-1000 hidden-view opacity-0 relative overflow-hidden p-4" style="background-image: linear-gradient(to bottom, rgba(6, 9, 17, 0.85), rgba(6, 9, 17, 0.92)), url('cortex_neural_bg.jpg'); background-size: cover; background-position: center;">
         <!-- Floating Glow Orbs for Environment Selection -->
         <div class="pointer-events-none absolute inset-0 overflow-hidden z-0">
             <div class="ambient-orb-1 absolute top-10 right-1/4 w-96 h-96 rounded-full bg-primary/20 blur-[120px]"></div>
@@ -611,7 +611,7 @@
     </div>
 
     <!-- First-Time Onboarding Wizard Overlay -->
-    <div id="onboardingWizard" class="fixed inset-0 z-[20000] bg-gradient-mesh-dark flex items-center justify-center transition-all duration-500 hidden-view relative overflow-hidden" style="display:none;">
+    <div id="onboardingWizard" class="fixed inset-0 min-h-screen h-screen w-screen z-[20000] bg-gradient-mesh-dark flex flex-col items-center justify-center transition-all duration-500 hidden-view relative overflow-hidden p-4" style="display:none; background-image: linear-gradient(to bottom, rgba(6, 9, 17, 0.85), rgba(6, 9, 17, 0.92)), url('cortex_neural_bg.jpg'); background-size: cover; background-position: center;">
         <!-- Ambient Glowing Background Orbs -->
         <div class="pointer-events-none absolute inset-0 overflow-hidden z-0">
             <div class="ambient-orb-1 absolute top-10 right-10 w-[30rem] h-[30rem] rounded-full bg-primary/20 blur-[130px]"></div>
@@ -1160,11 +1160,11 @@
             </nav>
 
             <div class="px-4 mt-6 border-t border-white/5 pt-4 doc-footer">
-                <a class="flex items-center gap-3 px-3 py-1.5 text-on-surface-variant hover:text-primary transition-colors text-xs" href="#">
+                <a class="flex items-center gap-3 px-3 py-1.5 text-on-surface-variant hover:text-primary transition-colors text-xs cursor-pointer" href="#" data-view="documentation" onclick="switchTab('documentation')">
                     <span class="material-symbols-outlined text-[16px]">description</span>
                     <span class="nav-text">Documentation</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-1.5 text-on-surface-variant hover:text-primary transition-colors text-xs" href="#">
+                <a class="flex items-center gap-3 px-3 py-1.5 text-on-surface-variant hover:text-primary transition-colors text-xs cursor-pointer" href="#" data-view="support" onclick="switchTab('support')">
                     <span class="material-symbols-outlined text-[16px]">help</span>
                     <span class="nav-text">Support</span>
                 </a>
@@ -3874,6 +3874,206 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3AM. DOCUMENTATION TAB VIEW -->
+            <section id="view-documentation" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
+                    <div class="flex items-center gap-3">
+                        <span class="p-2.5 bg-primary/10 border border-primary/30 rounded-xl text-primary material-symbols-outlined text-2xl">description</span>
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                                System Documentation & API Reference
+                                <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">Cortex v2.4</span>
+                            </h1>
+                            <p class="text-xs text-on-surface-variant mt-0.5">Comprehensive architecture guides, Snowflake Cortex CLI manuals, and zero-copy schema specs.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="bg-primary text-background font-bold px-4 py-2 rounded-xl text-xs hover:bg-primary-dim transition-all flex items-center gap-1.5 cursor-pointer btn-shine" onclick="showSlackToast('Documentation PDF manual downloaded.')">
+                            <span class="material-symbols-outlined text-[16px]">download</span> Download Manual
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-4 rounded-xl border border-white/10 bg-surface/40 hover:border-primary/40 transition-all cursor-pointer glass-card-interactive">
+                        <div class="flex items-center gap-2 text-primary font-bold text-sm mb-2">
+                            <span class="material-symbols-outlined text-lg">terminal</span>
+                            Cortex Code CLI
+                        </div>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Run automated multi-skill Snowflake pipelines directly from command shell or terminal scripts.</p>
+                        <div class="mt-3 text-[10px] font-mono text-secondary font-bold">cortex workflow run --skills query-opt</div>
+                    </div>
+
+                    <div class="p-4 rounded-xl border border-white/10 bg-surface/40 hover:border-secondary/40 transition-all cursor-pointer glass-card-interactive">
+                        <div class="flex items-center gap-2 text-secondary font-bold text-sm mb-2">
+                            <span class="material-symbols-outlined text-lg">schema</span>
+                            Zero-Copy Cloning
+                        </div>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Instantly instantiate staging DB clones without duplicating storage footprint or compute credits.</p>
+                        <div class="mt-3 text-[10px] font-mono text-secondary font-bold">CREATE TABLE clone CLONE prod</div>
+                    </div>
+
+                    <div class="p-4 rounded-xl border border-white/10 bg-surface/40 hover:border-tertiary/40 transition-all cursor-pointer glass-card-interactive">
+                        <div class="flex items-center gap-2 text-tertiary font-bold text-sm mb-2">
+                            <span class="material-symbols-outlined text-lg">shield</span>
+                            Governance & Security
+                        </div>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Enforce human-in-the-loop approval signatures and dynamic row-level security masks.</p>
+                        <div class="mt-3 text-[10px] font-mono text-tertiary font-bold">MFA Guardrails Enabled</div>
+                    </div>
+                </div>
+
+                <!-- Code Examples & API Docs -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="p-5 rounded-2xl border border-white/10 bg-[#0a0d14] space-y-4">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                            <span class="text-xs font-bold text-white flex items-center gap-2 font-mono">
+                                <span class="material-symbols-outlined text-secondary text-sm">code</span>
+                                Cortex CLI Configuration (pipeline_prod.json)
+                            </span>
+                            <button class="text-[10px] text-secondary hover:underline font-mono cursor-pointer" onclick="copyCodeSnippet('code-doc-1')">Copy Code</button>
+                        </div>
+                        <pre id="code-doc-1" class="font-mono text-xs text-emerald-400 bg-[#06080e] p-4 rounded-xl overflow-x-auto border border-white/5"><code>{
+  "version": "2.4",
+  "pipeline": "enterprise_leads_optimization",
+  "snowflake_context": {
+    "account": "SF_EAST_01",
+    "warehouse": "COMPUTE_WH",
+    "role": "CORTEX_ADMIN"
+  },
+  "skills": ["cortex-sql-opt", "cortex-anomaly-detect", "cortex-slack-notify"],
+  "gate_approval_threshold": 10000
+}</code></pre>
+                    </div>
+
+                    <div class="p-5 rounded-2xl border border-white/10 bg-[#0a0d14] space-y-4">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                            <span class="text-xs font-bold text-white flex items-center gap-2 font-mono">
+                                <span class="material-symbols-outlined text-primary text-sm">terminal</span>
+                                Cortex Shell Commands Reference
+                            </span>
+                            <button class="text-[10px] text-primary hover:underline font-mono cursor-pointer" onclick="copyCodeSnippet('code-doc-2')">Copy Code</button>
+                        </div>
+                        <pre id="code-doc-2" class="font-mono text-xs text-slate-300 bg-[#06080e] p-4 rounded-xl overflow-x-auto border border-white/5 space-y-1"><code><span class="text-secondary">$ cortex workflow run</span> --config pipeline.json
+<span class="text-slate-500"># Executes end-to-end multi-skill pipeline recording</span>
+
+<span class="text-secondary">$ cortex skill list</span>
+<span class="text-slate-500"># Lists active registered Cortex modular capabilities</span>
+
+<span class="text-secondary">$ cortex status</span> --account SF_EAST_01
+<span class="text-slate-500"># Checks Snowflake warehouse scaling and credit usage</span></code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3AN. SUPPORT TAB VIEW -->
+            <section id="view-support" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
+                    <div class="flex items-center gap-3">
+                        <span class="p-2.5 bg-secondary/10 border border-secondary/30 rounded-xl text-secondary material-symbols-outlined text-2xl">help</span>
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                                Enterprise Support & Helpdesk
+                                <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> 24/7 Live Support
+                                </span>
+                            </h1>
+                            <p class="text-xs text-on-surface-variant mt-0.5">Submit operation tickets, request warehouse scaling adjustments, or chat with technical support.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid Layout: Ticket Form + System Status & FAQ -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Support Ticket Form -->
+                    <div class="lg:col-span-2 glass-panel-heavy rounded-2xl p-6 border border-white/10 space-y-4">
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            <span class="material-symbols-outlined text-secondary text-lg">confirmation_number</span> Submit Operation Ticket
+                        </h3>
+                        
+                        <div class="space-y-4 text-xs">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] uppercase font-bold tracking-wider text-on-surface-variant mb-1">Contact Name</label>
+                                    <input type="text" id="suppName" value="Ranjeet Kumar" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none input-glow-focus"/>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase font-bold tracking-wider text-on-surface-variant mb-1">Email Address</label>
+                                    <input type="email" id="suppEmail" value="rajranjeet7680@gmail.com" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none input-glow-focus"/>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] uppercase font-bold tracking-wider text-on-surface-variant mb-1">Target Module / Skill</label>
+                                    <select id="suppModule" class="w-full bg-surface border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none input-glow-focus">
+                                        <option value="cortex-cli">Cortex Code CLI Studio</option>
+                                        <option value="snowflake-wh">Snowflake Warehouse Scaling</option>
+                                        <option value="anomalies">Telemetry & Anomaly Engine</option>
+                                        <option value="slack-webhooks">Slack & Jira Integrations</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase font-bold tracking-wider text-on-surface-variant mb-1">Priority Level</label>
+                                    <select id="suppPriority" class="w-full bg-surface border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none input-glow-focus">
+                                        <option value="low">Low (General Query)</option>
+                                        <option value="medium" selected>Medium (Performance Degradation)</option>
+                                        <option value="high">High (Production Outage / Blocker)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] uppercase font-bold tracking-wider text-on-surface-variant mb-1">Issue Description</label>
+                                <textarea id="suppMessage" rows="4" placeholder="Describe the behavior, error codes, or warehouse scaling request..." class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none input-glow-focus"></textarea>
+                            </div>
+
+                            <button class="bg-secondary text-background font-bold px-6 py-2.5 rounded-xl text-xs hover:bg-secondary-dim transition-all flex items-center gap-2 shadow-lg shadow-secondary/20 cursor-pointer btn-shine" onclick="submitSupportTicket()">
+                                <span class="material-symbols-outlined text-[16px]">send</span> Submit Ticket
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- FAQ & Live Assistance Panel -->
+                    <div class="space-y-6">
+                        <div class="glass-panel-heavy rounded-2xl p-5 border border-white/10 space-y-3">
+                            <h4 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                <span class="material-symbols-outlined text-emerald-400 text-base">support</span> Live Support Response
+                            </h4>
+                            <div class="text-[11px] text-on-surface-variant space-y-2">
+                                <div class="flex justify-between py-1 border-b border-white/5"><span>Average Ticket Response:</span> <span class="text-emerald-400 font-bold font-mono">&lt; 12 mins</span></div>
+                                <div class="flex justify-between py-1 border-b border-white/5"><span>Cortex AI Assistant:</span> <span class="text-primary font-bold font-mono">ONLINE (0ms latency)</span></div>
+                                <div class="flex justify-between py-1"><span>Active SLA Level:</span> <span class="text-amber-400 font-bold font-mono">Enterprise Platinum</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Accordion FAQ -->
+                        <div class="glass-panel-heavy rounded-2xl p-5 border border-white/10 space-y-3">
+                            <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-2">Frequently Asked Questions</h4>
+                            
+                            <div class="space-y-2 text-xs">
+                                <details class="group bg-white/5 p-3 rounded-xl border border-white/5 cursor-pointer">
+                                    <summary class="font-semibold text-white flex justify-between items-center select-none">
+                                        How do I run Cortex CLI pipelines?
+                                        <span class="material-symbols-outlined text-sm group-open:rotate-180 transition-transform">expand_more</span>
+                                    </summary>
+                                    <p class="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Navigate to Cortex Code CLI Studio from the sidebar menu and click "Play Screen Recording Workflow" or type `cortex run` into the embedded prompt.</p>
+                                </details>
+
+                                <details class="group bg-white/5 p-3 rounded-xl border border-white/5 cursor-pointer">
+                                    <summary class="font-semibold text-white flex justify-between items-center select-none">
+                                        Where do I manage API Cortex tokens?
+                                        <span class="material-symbols-outlined text-sm group-open:rotate-180 transition-transform">expand_more</span>
+                                    </summary>
+                                    <p class="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Go to Settings -&gt; Cortex &amp; Snowflake API Key Manager to retrieve or rotate your active authorization tokens.</p>
+                                </details>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
