@@ -552,6 +552,26 @@ function switchTab(tabId) {
         void activeEl.offsetWidth; // Force reflow for animation restart
         activeEl.classList.add('page-enter-anim');
     }
+
+    // Synchronize mobile bottom navigation tab bar
+    const mobileNavItems = document.querySelectorAll('#mobileBottomNav .mobile-nav-item');
+    mobileNavItems.forEach(btn => {
+        const targetTab = btn.getAttribute('data-mobile-tab');
+        if (targetTab === tabId) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    // Close mobile drawer on tab click if open on small screens
+    if (window.innerWidth <= 768) {
+        const sidebar = document.getElementById('appSidebar');
+        const overlay = document.getElementById('mobileSidebarOverlay');
+        if (sidebar) sidebar.classList.remove('mobile-drawer-open');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
     
     // Manage sidebar visibility and offsets for Welcome view vs others
     const sidebar = document.getElementById('appSidebar');
@@ -623,7 +643,9 @@ function initDraggableNodes() {
     if (!canvas) return;
 
     canvas.addEventListener('mousemove', handleNodeDrag);
+    canvas.addEventListener('touchmove', handleNodeDrag, { passive: false });
     canvas.addEventListener('mouseup', endNodeDrag);
+    canvas.addEventListener('touchend', endNodeDrag);
     canvas.addEventListener('mouseleave', endNodeDrag);
 
     // Bind event handlers to nodes
@@ -635,14 +657,16 @@ let pendingWireStartNode = null;
 function updateNodeDOMBindings() {
     const nodeElements = document.querySelectorAll('.canvas-node');
     nodeElements.forEach(nodeEl => {
-        nodeEl.addEventListener('mousedown', (e) => {
+        const handleDragStart = (e) => {
             if (e.target.classList.contains('connection-handle') || e.target.closest('button')) {
                 return;
             }
-            
             const nodeId = parseInt(nodeEl.getAttribute('data-node-id'));
             startNodeDrag(nodeId, e);
-        });
+        };
+
+        nodeEl.addEventListener('mousedown', handleDragStart);
+        nodeEl.addEventListener('touchstart', handleDragStart, { passive: false });
 
         nodeEl.addEventListener('click', (e) => {
             if (e.target.classList.contains('connection-handle')) return;
@@ -653,7 +677,7 @@ function updateNodeDOMBindings() {
         // Wire handle click listener
         const handles = nodeEl.querySelectorAll('.connection-handle');
         handles.forEach(handle => {
-            handle.addEventListener('click', (e) => {
+            const handleWireClick = (e) => {
                 e.stopPropagation();
                 const nodeId = parseInt(nodeEl.getAttribute('data-node-id'));
                 const isOutput = handle.classList.contains('connection-handle-right');
@@ -673,6 +697,11 @@ function updateNodeDOMBindings() {
                     document.querySelectorAll('.connection-handle').forEach(h => h.classList.remove('glow-pulse'));
                     pendingWireStartNode = null;
                 }
+            };
+            handle.addEventListener('click', handleWireClick);
+            handle.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                handleWireClick(e);
             });
         });
     });
@@ -686,45 +715,45 @@ function startNodeDrag(nodeId, e) {
     dragNodeId = nodeId;
     nodeEl.classList.add('canvas-node-active');
     
-    // Store cursor offset relative to top-left of node
-    const rect = nodeEl.getBoundingClientRect();
-    const canvasRect = document.getElementById('workflowCanvas').getBoundingClientRect();
-    dragStartX = e.clientX - rect.left;
-    dragStartY = e.clientY - rect.top;
+    const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
     
-    e.preventDefault();
+    const rect = nodeEl.getBoundingClientRect();
+    dragStartX = clientX - rect.left;
+    dragStartY = clientY - rect.top;
+    
+    if (e.cancelable) e.preventDefault();
 }
 
 function handleNodeDrag(e) {
     if (dragNodeId === null) return;
     
     const canvas = document.getElementById('workflowCanvas');
-    const container = document.getElementById('nodesContainer');
+    if (!canvas) return;
     const canvasRect = canvas.getBoundingClientRect();
     
-    // Calculate new position relative to scrolling canvas content container
-    const x = e.clientX - canvasRect.left + canvas.scrollLeft - dragStartX;
-    const y = e.clientY - canvasRect.top + canvas.scrollTop - dragStartY;
+    const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
     
-    // Constrain within workspace boundaries
+    const x = clientX - canvasRect.left + canvas.scrollLeft - dragStartX;
+    const y = clientY - canvasRect.top + canvas.scrollTop - dragStartY;
+    
     const constrainedX = Math.max(10, Math.min(2500, x));
     const constrainedY = Math.max(10, Math.min(2500, y));
 
-    // Update state DB
     const node = nodes.find(n => n.id === dragNodeId);
     if (node) {
         node.x = constrainedX;
         node.y = constrainedY;
     }
     
-    // Update Element style positions
     const nodeEl = document.querySelector(`.canvas-node[data-node-id="${dragNodeId}"]`);
     if (nodeEl) {
         nodeEl.style.left = `${constrainedX}px`;
         nodeEl.style.top = `${constrainedY}px`;
     }
     
-    // Recalculate dynamic SVG lines
+    if (e.cancelable) e.preventDefault();
     drawConnections();
 }
 
@@ -2287,28 +2316,39 @@ function applyPreloadedTemplate() {
 // Collapsible sidebar collapse/expand toggle
 function toggleSidebarCollapse() {
     const sidebar = document.getElementById('appSidebar');
+    const overlay = document.getElementById('mobileSidebarOverlay');
     const main = document.getElementById('mainContent');
     const footer = document.getElementById('appFooter');
     
-    if (sidebar) sidebar.classList.toggle('sidebar-collapsed');
-    
-    if (main) {
-        if (sidebar && sidebar.classList.contains('sidebar-collapsed')) {
-            main.classList.remove('ml-64');
-            main.classList.add('content-collapsed-margin');
+    if (window.innerWidth <= 768) {
+        if (sidebar) sidebar.classList.toggle('mobile-drawer-open');
+        if (overlay) overlay.classList.toggle('active');
+        if (sidebar && sidebar.classList.contains('mobile-drawer-open')) {
+            document.body.style.overflow = 'hidden';
         } else {
-            main.classList.remove('content-collapsed-margin');
-            main.classList.add('ml-64');
+            document.body.style.overflow = '';
         }
-    }
-    
-    if (footer) {
-        if (sidebar && sidebar.classList.contains('sidebar-collapsed')) {
-            footer.classList.remove('left-64');
-            footer.classList.add('footer-collapsed-left');
-        } else {
-            footer.classList.remove('footer-collapsed-left');
-            footer.classList.add('left-64');
+    } else {
+        if (sidebar) sidebar.classList.toggle('sidebar-collapsed');
+        
+        if (main) {
+            if (sidebar && sidebar.classList.contains('sidebar-collapsed')) {
+                main.classList.remove('ml-64');
+                main.classList.add('content-collapsed-margin');
+            } else {
+                main.classList.remove('content-collapsed-margin');
+                main.classList.add('ml-64');
+            }
+        }
+        
+        if (footer) {
+            if (sidebar && sidebar.classList.contains('sidebar-collapsed')) {
+                footer.classList.remove('left-64');
+                footer.classList.add('footer-collapsed-left');
+            } else {
+                footer.classList.remove('footer-collapsed-left');
+                footer.classList.add('left-64');
+            }
         }
     }
     

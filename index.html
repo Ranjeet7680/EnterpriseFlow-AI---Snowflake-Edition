@@ -4,7 +4,7 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>EnterpriseFlow AI | Intelligent Data Workflows</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2370ffe0'%3E%3Cpolygon points='12,2 22,8.5 22,17.5 12,22 2,17.5 2,8.5' stroke='%2370ffe0' stroke-width='2' fill='none'/%3E%3Ccircle cx='12' cy='12' r='3.5' fill='%2370ffe0'/%3E%3C/svg%3E" />
+    <link rel="icon" type="image/png" href="logo.png" />
     <!-- Tailwind CSS with Forms and Container Queries Plugins -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <!-- Google Fonts & Material Symbols -->
@@ -105,38 +105,16 @@
         <!-- Splash Content -->
         <main class="relative z-10 flex flex-col items-center justify-center w-full max-w-[1440px] px-6 h-full fade-in-sequence">
             <!-- Central Animated Logo Section -->
-            <div class="relative mb-8 flex flex-col items-center">
-                <div class="w-48 h-48 md:w-56 md:h-56 relative drop-shadow-[0_0_40px_rgba(112,255,224,0.25)]">
-                    <svg fill="none" class="w-full h-full" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="logo_grad" x1="0%" x2="100%" y1="0%" y2="100%">
-                                <stop offset="0%" stop-color="#00E5C3"></stop>
-                                <stop offset="100%" stop-color="#2D7FF9"></stop>
-                            </linearGradient>
-                            <filter id="glow">
-                                <feGaussianBlur result="blur" stdDeviation="3"></feGaussianBlur>
-                                <feComposite in="SourceGraphic" in2="blur" operator="over"></feComposite>
-                            </filter>
-                        </defs>
-                        <!-- Outer Snowflake Ring -->
-                        <g filter="url(#glow)">
-                            <path d="M100 20 L110 50 L140 50 L115 70 L125 100 L100 80 L75 100 L85 70 L60 50 L90 50 Z" fill="url(#logo_grad)" opacity="0.85">
-                                <animateTransform attributeName="transform" dur="20s" from="0 100 100" repeatCount="indefinite" to="360 100 100" type="rotate"></animateTransform>
-                            </path>
-                            <!-- Inner Flow Diamond -->
-                            <rect fill="#F8FAFC" height="30" rx="4" transform="rotate(45 100 100)" width="30" x="85" y="85">
-                                <animate attributeName="opacity" dur="3s" repeatCount="indefinite" values="0.4;1;0.4"></animate>
-                            </rect>
-                        </g>
-                        <text fill="#F8FAFC" font-family="Inter, sans-serif" font-size="13" font-weight="700" text-anchor="middle" x="100" y="160">EnterpriseFlow AI</text>
-                    </svg>
+            <div class="relative mb-6 flex flex-col items-center">
+                <div class="w-40 h-40 md:w-56 md:h-56 relative drop-shadow-[0_0_40px_rgba(0,229,195,0.4)] transition-all">
+                    <img src="logo.png" alt="EnterpriseFlow AI Logo" class="w-full h-full object-contain animate-pulse" />
                 </div>
-                <div class="mt-6 text-center">
-                    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tighter text-primary">
+                <div class="mt-4 text-center">
+                    <h1 class="text-3xl md:text-5xl font-extrabold tracking-tighter text-primary">
                         EnterpriseFlow AI
                     </h1>
                     <p class="font-code-sm text-[10px] text-on-surface-variant/80 tracking-[0.25em] uppercase mt-2">
-                        Intelligent Data Workflows & Agents
+                        Connect. Automate. Intelligently.
                     </p>
                 </div>
             </div>
@@ -196,7 +174,10 @@
         <nav class="fixed top-0 w-full z-50 bg-[#08111F]/80 backdrop-blur-xl border-b border-white/10 shadow-[0_0_15px_rgba(0,229,195,0.05)]">
             <div class="flex justify-between items-center px-6 h-20 max-w-[1440px] mx-auto">
                 <div class="flex items-center gap-8">
-                    <a class="text-xl font-bold text-primary tracking-tight" href="#">EnterpriseFlow AI</a>
+                    <div class="flex items-center gap-3">
+                        <img src="logo.png" alt="EnterpriseFlow AI Logo" class="w-8 h-8 rounded-lg object-contain drop-shadow-[0_0_8px_rgba(0,229,195,0.4)]" />
+                        <a class="text-lg md:text-xl font-bold text-primary tracking-tight" href="#">EnterpriseFlow AI</a>
+                    </div>
                     <div class="hidden md:flex gap-6 text-xs font-semibold">
                         <a class="text-on-surface-variant hover:text-primary transition-colors" href="#" onclick="enterAuthLogin()">Workspaces</a>
                         <a class="text-on-surface-variant hover:text-primary transition-colors" href="#" onclick="enterAuthLogin()">Solutions</a>
@@ -460,9 +441,7 @@
         <div class="glass-panel-heavy rounded-2xl w-full max-w-md p-8 border border-white/15 shadow-2xl relative z-10 flex flex-col gap-6 select-none modal-pop-anim">
             <!-- Header -->
             <div class="flex flex-col items-center gap-2">
-                <div class="w-12 h-12 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container shadow-[0_0_15px_rgba(0,229,195,0.4)]">
-                    <span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">auto_graph</span>
-                </div>
+                <img src="logo.png" alt="EnterpriseFlow AI Logo" class="w-14 h-14 rounded-2xl object-contain drop-shadow-[0_0_20px_rgba(0,229,195,0.4)] mb-1" />
                 <h2 class="font-semibold text-primary text-[20px] leading-tight">EnterpriseFlow AI</h2>
                 <p class="text-[9px] text-on-surface-variant tracking-[0.2em] uppercase">Snowflake Edition</p>
             </div>
@@ -840,21 +819,17 @@
     <div id="appShell" class="opacity-0 transition-opacity duration-1000 h-screen w-screen flex flex-col overflow-hidden hidden-view">
         
         <!-- TOP NAV BAR -->
-        <header class="bg-surface/80 backdrop-blur-xl border-b border-white/10 shadow-[0_0_15px_rgba(0,229,195,0.03)] fixed top-0 left-0 w-full h-16 z-50 flex justify-between items-center px-8 md:px-12 select-none">
-            <div class="flex items-center gap-4">
+        <header class="bg-surface/80 backdrop-blur-xl border-b border-white/10 shadow-[0_0_15px_rgba(0,229,195,0.03)] fixed top-0 left-0 w-full h-16 z-50 flex justify-between items-center px-4 sm:px-8 md:px-12 select-none">
+            <div class="flex items-center gap-3">
                 <!-- Hamburger Collapse Trigger -->
                 <button class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center p-1 rounded-lg" onclick="toggleSidebarCollapse()" title="Toggle Sidebar">
                     <span class="material-symbols-outlined text-[22px]">menu</span>
                 </button>
                 <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 text-primary">
-                        <svg viewBox="0 0 100 100" fill="none" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="30" y="30" width="40" height="40" rx="6" fill="currentColor" transform="rotate(45 50 50)"></rect>
-                        </svg>
-                    </div>
-                    <span class="text-lg font-bold text-primary tracking-tight">EnterpriseFlow AI</span>
+                    <img src="logo.png" alt="EnterpriseFlow AI Logo" class="w-8 h-8 rounded-lg object-contain drop-shadow-[0_0_8px_rgba(0,229,195,0.4)]" />
+                    <span class="text-sm sm:text-lg font-bold text-primary tracking-tight truncate max-w-[130px] sm:max-w-none">EnterpriseFlow AI</span>
                 </div>
-                <div class="h-4 w-px bg-white/10"></div>
+                <div class="h-4 w-px bg-white/10 hidden sm:block"></div>
                 <nav class="hidden md:flex items-center gap-6">
                     <a href="#" class="text-sm text-on-surface hover:text-primary transition-colors font-medium">Workspaces</a>
                     <a href="#" class="text-sm text-on-surface-variant hover:text-primary transition-colors font-medium" onclick="switchTab('settings')">Settings</a>
@@ -1093,20 +1068,22 @@
             </div>
         </div>
 
-        <!-- SIDEBAR NAVIGATION -->
-        <!-- SIDEBAR NAVIGATION -->
-        <aside id="appSidebar" class="bg-surface-container/80 backdrop-blur-2xl border-r border-white/10 h-screen w-64 fixed left-0 top-0 flex flex-col py-6 z-45 select-none overflow-y-auto custom-scrollbar">
+        <!-- SIDEBAR NAVIGATION & MOBILE OVERLAY -->
+        <div id="mobileSidebarOverlay" onclick="toggleSidebarCollapse()"></div>
+        <aside id="appSidebar" class="bg-surface-container/80 backdrop-blur-2xl border-r border-white/10 h-screen w-64 fixed left-0 top-0 flex flex-col py-6 z-[50] select-none overflow-y-auto custom-scrollbar transition-all duration-300">
             <!-- Sidebar Header / Logo -->
             <div class="px-6 mb-6 mt-10 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container shadow-[0_0_12px_rgba(0,229,195,0.3)] shrink-0">
-                        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">auto_graph</span>
-                    </div>
+                    <img src="logo.png" alt="EnterpriseFlow AI Logo" class="w-9 h-9 rounded-xl object-contain shadow-[0_0_12px_rgba(0,229,195,0.3)] shrink-0" />
                     <div class="logo-text">
                         <h2 class="font-semibold text-primary text-[14px] leading-tight">EnterpriseFlow</h2>
                         <p class="text-[9px] text-on-surface-variant tracking-widest uppercase logo-subtitle">Snowflake Edition</p>
                     </div>
                 </div>
+                <!-- Close button for mobile drawer -->
+                <button class="md:hidden text-on-surface-variant hover:text-white p-1" onclick="toggleSidebarCollapse()">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
             </div>
 
             <!-- Search navigation filter -->
@@ -4976,6 +4953,34 @@
                 <span>V2.4.0-STABLE</span>
             </div>
         </footer>
+
+        <!-- MOBILE BOTTOM NAVIGATION BAR -->
+        <nav id="mobileBottomNav" class="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around px-1 select-none">
+            <button class="mobile-nav-item active" data-mobile-tab="dashboard" onclick="switchTab('dashboard')">
+                <span class="material-symbols-outlined">space_dashboard</span>
+                <span>Overview</span>
+            </button>
+            <button class="mobile-nav-item" data-mobile-tab="workflows" onclick="switchTab('workflows')">
+                <span class="material-symbols-outlined">hub</span>
+                <span>Canvas</span>
+            </button>
+            <button class="mobile-nav-item" data-mobile-tab="snowflake-sql" onclick="switchTab('snowflake-sql')">
+                <span class="material-symbols-outlined">database</span>
+                <span>Snowflake</span>
+            </button>
+            <button class="mobile-nav-item" data-mobile-tab="ai-agent" onclick="switchTab('ai-agent')">
+                <span class="material-symbols-outlined">smart_toy</span>
+                <span>Cortex AI</span>
+            </button>
+            <button class="mobile-nav-item" data-mobile-tab="cortex-cli" onclick="switchTab('cortex-cli')">
+                <span class="material-symbols-outlined">terminal</span>
+                <span>CLI</span>
+            </button>
+            <button class="mobile-nav-item" onclick="toggleSidebarCollapse()">
+                <span class="material-symbols-outlined">menu</span>
+                <span>Menu</span>
+            </button>
+        </nav>
 
     </div>
 

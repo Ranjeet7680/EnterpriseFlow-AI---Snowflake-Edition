@@ -79,21 +79,7 @@ export default function Home() {
         zIndex: 100
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '36px',
-            height: '36px',
-            background: 'linear-gradient(135deg, rgba(0,229,195,0.15), rgba(173,198,255,0.15))',
-            border: '1px solid var(--brp)',
-            borderRadius: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <polygon points="12,2 22,8.5 22,17.5 12,22 2,17.5 2,8.5" stroke="var(--p)" strokeWidth="1.5"/>
-              <circle cx="12" cy="12" r="3" fill="var(--p)"/>
-            </svg>
-          </div>
+          <img src="/logo.png" alt="EnterpriseFlow AI Logo" style={{ width: '36px', height: '36px', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(0,229,195,0.4))' }} />
           <div>
             <h1 style={{ fontSize: '15px', fontWeight: 800, letterSpacing: '-0.3px' }}>EnterpriseFlow AI</h1>
             <p style={{ fontSize: '8px', color: 'var(--txm)', fontFamily: 'JetBrains Mono', letterSpacing: '0.5px' }}>MOBILE CENTER &amp; EDGE</p>

@@ -598,4 +598,167 @@ main, footer {
     box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 229, 195, 0.15);
 }
 
+/* ==========================================
+   MOBILE DESIGN SYSTEM & RESPONSIVE LAYOUTS
+   ========================================== */
+
+/* Mobile Bottom Navigation Bar */
+#mobileBottomNav {
+    height: 64px;
+    background: rgba(6, 9, 17, 0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.7);
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    color: rgba(224, 227, 229, 0.6);
+    font-size: 10px;
+    font-weight: 600;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    padding: 4px 0;
+    border-radius: 12px;
+}
+
+.mobile-nav-item .material-symbols-outlined {
+    font-size: 22px;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.25s ease;
+}
+
+.mobile-nav-item.active {
+    color: var(--color-primary);
+}
+
+.mobile-nav-item.active .material-symbols-outlined {
+    transform: translateY(-2px) scale(1.15);
+    filter: drop-shadow(0 0 8px var(--color-primary));
+}
+
+.mobile-nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    width: 16px;
+    height: 3px;
+    background-color: var(--color-primary);
+    border-radius: 99px;
+    box-shadow: 0 0 8px var(--color-primary);
+}
+
+/* Mobile Sidebar Backdrop Overlay */
+#mobileSidebarOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background-color: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+#mobileSidebarOverlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Off-Canvas Mobile Drawer Styles */
+@media (max-width: 768px) {
+    #appSidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        width: 280px !important;
+        z-index: 50 !important;
+        transform: translateX(-100%);
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease !important;
+        box-shadow: none;
+    }
+    #appSidebar.mobile-drawer-open {
+        transform: translateX(0) !important;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 229, 195, 0.2) !important;
+    }
+
+    #mainContent {
+        margin-left: 0 !important;
+        padding-bottom: 76px !important;
+        height: calc(100vh - 4rem) !important;
+        height: calc(100dvh - 4rem) !important;
+    }
+
+    #appFooter {
+        left: 0 !important;
+        bottom: 64px !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        height: 38px !important;
+    }
+
+    .canvas-node {
+        touch-action: none;
+    }
+
+    /* Mobile Bottom Sheet Drawer for Node Inspector */
+    .mobile-bottom-sheet {
+        position: fixed !important;
+        bottom: 64px !important;
+        left: 0 !important;
+        right: 0 !important;
+        max-height: 70vh !important;
+        border-top-left-radius: 24px !important;
+        border-top-right-radius: 24px !important;
+        border-top: 1px solid rgba(0, 229, 195, 0.4) !important;
+        background: rgba(10, 14, 15, 0.96) !important;
+        backdrop-filter: blur(25px) !important;
+        z-index: 45 !important;
+        overflow-y: auto !important;
+        animation: slideUpSheet 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.9), 0 -2px 15px rgba(0, 229, 195, 0.2);
+    }
+    @keyframes slideUpSheet {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    /* Stack grid elements on mobile */
+    .responsive-grid-cards {
+        grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    }
+    .responsive-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    
+    /* Touch target sizes */
+    button, a, input, select, textarea {
+        min-height: 40px;
+    }
+    
+    /* Touch scroll optimization */
+    .touch-scroll-x {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-x !important;
+    }
+}
+
+/* Touch active micro-animations */
+@media (hover: none) and (pointer: coarse) {
+    .glass-card-interactive:active {
+        transform: scale(0.98);
+    }
+    button:active {
+        transform: scale(0.96);
+    }
+}
+
+
 
