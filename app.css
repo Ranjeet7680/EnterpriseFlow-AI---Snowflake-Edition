@@ -273,6 +273,11 @@ html.dark .glass-card-interactive:hover, body.dark .glass-card-interactive:hover
     padding-left: 0 !important;
     padding-right: 0 !important;
 }
+.sidebar-collapsed .px-4.mb-4.mt-2 {
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
 .sidebar-collapsed .nav-group-container button {
     justify-content: center;
     padding: 10px 0 !important;

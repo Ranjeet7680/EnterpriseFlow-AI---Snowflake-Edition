@@ -1086,15 +1086,13 @@
         <!-- SIDEBAR NAVIGATION & MOBILE OVERLAY -->
         <div id="mobileSidebarOverlay" onclick="toggleSidebarCollapse()"></div>
         <aside id="appSidebar" class="bg-surface-container/80 backdrop-blur-2xl border-r border-white/10 h-screen w-64 fixed left-0 top-0 flex flex-col py-4 z-[50] select-none overflow-y-auto custom-scrollbar transition-all duration-300">
-            <!-- Sidebar Header / Logo & Collapse Button -->
+            <!-- Sidebar Header / Navigation Title & Collapse Button -->
             <div class="px-4 mb-4 mt-2 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-slate-900/90 border border-primary/30 p-1 flex items-center justify-center shadow-[0_0_15px_rgba(0,229,195,0.35)] shrink-0 overflow-hidden cursor-pointer" onclick="toggleSidebarCollapse()" title="Toggle Compact / Full Menu">
-                        <img src="logo.png" alt="EnterpriseFlow AI Logo" class="w-full h-full brand-logo-icon" />
-                    </div>
-                    <div class="logo-text">
-                        <h2 class="font-extrabold text-primary text-[15px] leading-tight tracking-tight">EnterpriseFlow</h2>
-                        <p class="text-[9px] text-on-surface-variant font-mono tracking-widest uppercase logo-subtitle">Snowflake Edition</p>
+                <div class="flex items-center gap-2 logo-text">
+                    <span class="material-symbols-outlined text-primary text-lg">menu_open</span>
+                    <div>
+                        <h2 class="font-extrabold text-primary text-xs uppercase tracking-wider leading-tight">Navigation</h2>
+                        <p class="text-[8px] text-on-surface-variant font-mono tracking-widest uppercase logo-subtitle">Snowflake Edition</p>
                     </div>
                 </div>
                 <!-- Desktop Menu Short / Expand Button -->
