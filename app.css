@@ -598,6 +598,18 @@ main, footer {
     box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 229, 195, 0.15);
 }
 
+/* Brand Logo Image Cropping & Focusing */
+.brand-logo-icon {
+    object-fit: cover !important;
+    object-position: 50% 28% !important;
+    border-radius: 12px;
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+.brand-logo-icon:hover {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 12px rgba(0, 229, 195, 0.6));
+}
+
 /* ==========================================
    MOBILE DESIGN SYSTEM & RESPONSIVE LAYOUTS
    ========================================== */
