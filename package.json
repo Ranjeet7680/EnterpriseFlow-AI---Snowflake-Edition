@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "EnterpriseFlow AI is a high-performance, single-page operations dashboard and visual agent workflow builder designed specifically for orchestrating Snowflake database clusters and Cortex AI pipelines.",
   "scripts": {
-    "build": "mkdir -p public && cp index.html app.js app.css logo.png cortex_neural_bg.jpg public/ || true"
+    "build": "mkdir -p public && cp index.html app.js app.css logo.png logo_light.png cortex_neural_bg.jpg public/ || true"
   },
   "repository": {
     "type": "git",

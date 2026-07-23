@@ -1764,6 +1764,7 @@ function toggleInterfaceTheme() {
     const btn = document.getElementById('themeToggleBtn');
     const headerIcon = document.getElementById('headerThemeIcon');
     const toggleDot = btn?.querySelector('div');
+    const logoImgs = document.querySelectorAll('.brand-logo-icon');
     
     isDarkTheme = !isDarkTheme;
     
@@ -1775,6 +1776,9 @@ function toggleInterfaceTheme() {
             toggleDot.style.left = '4px';
             toggleDot.className = 'w-4 h-4 bg-primary rounded-full transition-all duration-300 absolute left-1';
         }
+        logoImgs.forEach(img => {
+            img.src = 'logo.png';
+        });
         showSlackToast("Switched interface theme to Dark Mode.");
     } else {
         document.documentElement.classList.remove('dark');
@@ -1784,6 +1788,9 @@ function toggleInterfaceTheme() {
             toggleDot.style.left = '24px';
             toggleDot.className = 'w-4 h-4 bg-on-secondary-fixed rounded-full transition-all duration-300 absolute left-6';
         }
+        logoImgs.forEach(img => {
+            img.src = 'logo_light.png';
+        });
         showSlackToast("Switched interface theme to Day Mode (Light Theme).");
     }
 }
