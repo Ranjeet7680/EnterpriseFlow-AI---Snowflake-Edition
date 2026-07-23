@@ -2488,6 +2488,7 @@ function toggleSidebarCollapse() {
     const overlay = document.getElementById('mobileSidebarOverlay');
     const main = document.getElementById('mainContent');
     const footer = document.getElementById('appFooter');
+    const collapseIcon = document.getElementById('sidebarCollapseIcon');
     
     if (window.innerWidth <= 768) {
         if (sidebar) sidebar.classList.toggle('mobile-drawer-open');
@@ -2499,9 +2500,14 @@ function toggleSidebarCollapse() {
         }
     } else {
         if (sidebar) sidebar.classList.toggle('sidebar-collapsed');
+        const isCollapsed = sidebar && sidebar.classList.contains('sidebar-collapsed');
+        
+        if (collapseIcon) {
+            collapseIcon.innerText = isCollapsed ? 'last_page' : 'first_page';
+        }
         
         if (main) {
-            if (sidebar && sidebar.classList.contains('sidebar-collapsed')) {
+            if (isCollapsed) {
                 main.classList.remove('ml-64');
                 main.classList.add('content-collapsed-margin');
             } else {
@@ -2511,7 +2517,7 @@ function toggleSidebarCollapse() {
         }
         
         if (footer) {
-            if (sidebar && sidebar.classList.contains('sidebar-collapsed')) {
+            if (isCollapsed) {
                 footer.classList.remove('left-64');
                 footer.classList.add('footer-collapsed-left');
             } else {
@@ -2519,6 +2525,8 @@ function toggleSidebarCollapse() {
                 footer.classList.add('left-64');
             }
         }
+        
+        showSlackToast(isCollapsed ? "Navigation menu collapsed to compact icon view." : "Navigation menu expanded to full view.");
     }
     
     // Redraw SVG path links since canvas workspace resized
