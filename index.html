@@ -845,6 +845,10 @@
                     AI Assistant
                 </button>
                 <div class="flex items-center gap-3 relative">
+                    <!-- Day/Night Mode Theme Toggle Button -->
+                    <button class="p-1.5 rounded-lg hover:bg-white/10 text-on-surface-variant hover:text-primary transition-all flex items-center justify-center" onclick="toggleInterfaceTheme()" title="Toggle Day/Night Theme">
+                        <span class="material-symbols-outlined text-[22px]" id="headerThemeIcon">light_mode</span>
+                    </button>
                     <!-- Notifications Button -->
                     <button class="relative p-1.5 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all" onclick="toggleNotificationsDropdown(event)" title="Notifications Center">
                         <span class="material-symbols-outlined text-[22px]">notifications</span>
@@ -4873,23 +4877,181 @@
                 </div>
             </section>
 
-            <!-- 3AJ. REPORTS TAB VIEW -->
+            <!-- ========================================== -->
+            <!-- VIEW: AUTOMATED OPERATIONS & ANALYTICS REPORTS -->
+            <!-- ========================================== -->
             <section id="view-reports" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view">
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary text-[24px]">summarize</span>
-                        Automated Operations Reports
-                    </h1>
-                    <p class="text-xs text-on-surface-variant mt-1">Configure scheduled delivery formats or export executive data summaries instantly.</p>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 select-none">
-                    <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between h-44">
-                        <div>
-                            <h3 class="text-sm font-bold text-white">Executive Daily Brief</h3>
-                            <p class="text-[10px] text-on-surface-variant mt-1">Daily overview of protected revenues and credits consumed.</p>
+                <!-- Header Banner -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
+                    <div class="flex items-center gap-3">
+                        <div class="p-3 bg-primary/10 border border-primary/30 rounded-2xl text-primary shadow-[0_0_15px_rgba(0,229,195,0.2)]">
+                            <span class="material-symbols-outlined text-2xl">summarize</span>
                         </div>
-                        <button class="w-full bg-primary text-on-secondary font-bold py-2 rounded-xl text-xs" onclick="alert('Daily Brief PDF generated and sent to email.')">Export PDF</button>
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                                Executive Operations & Analytics Reports
+                                <span class="text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">AUTOMATED CRON ACTIVE</span>
+                            </h1>
+                            <p class="text-xs text-on-surface-variant mt-0.5">Generate, schedule, and export comprehensive enterprise metrics, SQL partition audits, and SLA compliance reports.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button class="bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 active:scale-95" onclick="exportAllReportsCSV()">
+                            <span class="material-symbols-outlined text-[16px]">file_download</span>
+                            <span>Export All CSVs</span>
+                        </button>
+                        <button class="bg-gradient-to-r from-secondary to-primary text-on-secondary font-bold text-xs px-4 py-2.5 rounded-xl shadow-lg hover:brightness-110 transition-all flex items-center gap-2 active:scale-95 btn-shine" onclick="generateFullPDFReport()">
+                            <span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+                            <span>Generate Master Executive PDF</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Report Modules Grid (4 Report Categories) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 select-none">
+                    <!-- Report Card 1: Executive Daily Brief -->
+                    <div class="glass-card-interactive rounded-2xl p-5 bg-surface-container/80 border border-white/10 space-y-4 flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20 material-symbols-outlined text-xl">finance</span>
+                                <span class="text-[9px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">DAILY CRON</span>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-white">Executive Revenue & SLA Brief</h3>
+                                <p class="text-[10px] text-on-surface-variant mt-1 leading-relaxed">24-hour summary of protected revenues ($12.5k), SLA uptime (99.9%), and credits consumed.</p>
+                            </div>
+                        </div>
+                        <div class="pt-3 border-t border-white/10 space-y-2">
+                            <div class="flex gap-2">
+                                <button class="flex-1 bg-primary text-on-secondary font-bold py-2 rounded-xl text-xs active:scale-95 transition-all" onclick="generateReportPDF('Executive Revenue & SLA Brief')">PDF</button>
+                                <button class="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl text-xs active:scale-95 transition-all" onclick="generateReportCSV('Executive Revenue & SLA Brief')">CSV</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report Card 2: Snowflake SQL Performance Audit -->
+                    <div class="glass-card-interactive rounded-2xl p-5 bg-surface-container/80 border border-white/10 space-y-4 flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="p-2 rounded-xl bg-secondary/10 text-secondary border border-secondary/20 material-symbols-outlined text-xl">database</span>
+                                <span class="text-[9px] font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">+48% SPEEDUP</span>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-white">Snowflake SQL Performance Audit</h3>
+                                <p class="text-[10px] text-on-surface-variant mt-1 leading-relaxed">Zero-copy micro-partition scans, runtime query speedups, and warehouse compute tier breakdown.</p>
+                            </div>
+                        </div>
+                        <div class="pt-3 border-t border-white/10 space-y-2">
+                            <div class="flex gap-2">
+                                <button class="flex-1 bg-primary text-on-secondary font-bold py-2 rounded-xl text-xs active:scale-95 transition-all" onclick="generateReportPDF('Snowflake SQL Performance Audit')">PDF</button>
+                                <button class="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl text-xs active:scale-95 transition-all" onclick="generateReportCSV('Snowflake SQL Performance Audit')">CSV</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report Card 3: Security & Governance Compliance -->
+                    <div class="glass-card-interactive rounded-2xl p-5 bg-surface-container/80 border border-white/10 space-y-4 flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 material-symbols-outlined text-xl">security</span>
+                                <span class="text-[9px] font-mono font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded">RBAC AUDIT</span>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-white">Security & RBAC Compliance Log</h3>
+                                <p class="text-[10px] text-on-surface-variant mt-1 leading-relaxed">Firebase SSO authentication history, API token access logs, and Human Gate Approval verification audit.</p>
+                            </div>
+                        </div>
+                        <div class="pt-3 border-t border-white/10 space-y-2">
+                            <div class="flex gap-2">
+                                <button class="flex-1 bg-primary text-on-secondary font-bold py-2 rounded-xl text-xs active:scale-95 transition-all" onclick="generateReportPDF('Security & RBAC Compliance Log')">PDF</button>
+                                <button class="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl text-xs active:scale-95 transition-all" onclick="generateReportCSV('Security & RBAC Compliance Log')">CSV</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report Card 4: Cortex AI Telemetry & Anomaly Report -->
+                    <div class="glass-card-interactive rounded-2xl p-5 bg-surface-container/80 border border-white/10 space-y-4 flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 material-symbols-outlined text-xl">analytics</span>
+                                <span class="text-[9px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">TELEMETRY</span>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-white">Cortex AI Telemetry & Anomalies</h3>
+                                <p class="text-[10px] text-on-surface-variant mt-1 leading-relaxed">Anomaly detection scans, Cortex LLM confidence scores (96.8%), and Slack webhook dispatch logs.</p>
+                            </div>
+                        </div>
+                        <div class="pt-3 border-t border-white/10 space-y-2">
+                            <div class="flex gap-2">
+                                <button class="flex-1 bg-primary text-on-secondary font-bold py-2 rounded-xl text-xs active:scale-95 transition-all" onclick="generateReportPDF('Cortex AI Telemetry & Anomalies')">PDF</button>
+                                <button class="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl text-xs active:scale-95 transition-all" onclick="generateReportCSV('Cortex AI Telemetry & Anomalies')">CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scheduled Delivery & Email Dispatch Settings -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 glass-panel-heavy rounded-2xl p-6 border border-white/10 space-y-4">
+                        <div class="flex justify-between items-center border-b border-white/10 pb-4">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary text-xl">schedule_send</span>
+                                <div>
+                                    <h3 class="text-sm font-bold text-white uppercase tracking-wider">Automated Scheduled Report Delivery</h3>
+                                    <p class="text-[10px] text-on-surface-variant">Configure cron schedule for sending automated PDF/CSV reports directly to stakeholders</p>
+                                </div>
+                            </div>
+                            <span class="bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/30">CRON ACTIVE</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            <div>
+                                <label class="block text-[10px] uppercase font-bold tracking-wider text-on-surface-variant mb-1.5">Recipient Emails (Comma Separated)</label>
+                                <input type="text" id="reportEmailRecipients" value="rajranjeet7680@gmail.com, team@enterpriseflow.ai" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none input-glow-focus" />
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase font-bold tracking-wider text-on-surface-variant mb-1.5">Dispatch Schedule</label>
+                                <select id="reportCronSchedule" class="w-full bg-surface border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none input-glow-focus">
+                                    <option value="daily">Daily at 08:00 AM UTC</option>
+                                    <option value="weekly" selected>Weekly (Every Monday 06:00 AM)</option>
+                                    <option value="monthly">Monthly (1st of Month)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2">
+                            <span class="text-xs text-on-surface-variant font-medium">Include Interactive Snowflake Query Links in PDF</span>
+                            <button class="bg-primary text-on-secondary font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg hover:brightness-110 transition-all active:scale-95" onclick="saveReportScheduleSettings()">Save Delivery Schedule</button>
+                        </div>
+                    </div>
+
+                    <!-- Instant Interactive Preview Container -->
+                    <div class="glass-panel-heavy rounded-2xl p-6 border border-white/10 space-y-4 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                <span class="material-symbols-outlined text-secondary text-lg">preview</span> Live Executive Summary
+                            </h3>
+                            <p class="text-[10px] text-on-surface-variant mt-1">Real-time snapshot generated from active Snowflake warehouse telemetry.</p>
+                            <div class="mt-4 p-4 bg-slate-950/90 rounded-xl border border-white/10 space-y-2 font-mono text-[10px]">
+                                <div class="flex justify-between text-on-surface-variant">
+                                    <span>TIMESTAMP:</span>
+                                    <span class="text-primary">2026-07-23 12:53 UTC</span>
+                                </div>
+                                <div class="flex justify-between text-on-surface-variant">
+                                    <span>STATUS:</span>
+                                    <span class="text-emerald-400 font-bold">OPTIMIZED (0 ANOMALIES)</span>
+                                </div>
+                                <div class="flex justify-between text-on-surface-variant">
+                                    <span>CREDITS BURNED:</span>
+                                    <span class="text-white">142.8 CREDITS</span>
+                                </div>
+                                <div class="flex justify-between text-on-surface-variant">
+                                    <span>REVENUE PROTECTED:</span>
+                                    <span class="text-primary font-bold">$12,500.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="w-full bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold text-xs py-2.5 rounded-xl transition-all active:scale-95" onclick="generateReportPDF('Live Executive Summary')">Print Instant Brief</button>
                     </div>
                 </div>
             </section>

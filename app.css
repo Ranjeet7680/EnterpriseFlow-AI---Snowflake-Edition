@@ -787,5 +787,77 @@ select option:hover, select option:focus, select option:checked {
     }
 }
 
+/* ==========================================
+   DAY MODE (LIGHT THEME) END-TO-END STYLING
+   ========================================== */
+body:not(.dark) {
+    background-color: #F4F6F9 !important;
+    color: #0F172A !important;
+}
+
+body:not(.dark) .text-white {
+    color: #0F172A !important;
+}
+
+body:not(.dark) .text-on-surface-variant {
+    color: #475569 !important;
+}
+
+body:not(.dark) .glass-panel {
+    background: rgba(255, 255, 255, 0.88) !important;
+    border-color: rgba(203, 213, 225, 0.7) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+}
+
+body:not(.dark) .glass-panel-heavy {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border-color: rgba(203, 213, 225, 0.85) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.09) !important;
+}
+
+body:not(.dark) header, 
+body:not(.dark) #appSidebar, 
+body:not(.dark) #mobileBottomNav, 
+body:not(.dark) #appFooter {
+    background: rgba(255, 255, 255, 0.94) !important;
+    border-color: rgba(203, 213, 225, 0.75) !important;
+    color: #0F172A !important;
+}
+
+body:not(.dark) .bg-surface-dim, 
+body:not(.dark) .bg-surface-container, 
+body:not(.dark) .bg-surface-container-low, 
+body:not(.dark) .bg-surface-container-lowest,
+body:not(.dark) .bg-slate-950\/90,
+body:not(.dark) .bg-slate-950\/95 {
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+    border-color: rgba(203, 213, 225, 0.6) !important;
+}
+
+body:not(.dark) input, 
+body:not(.dark) select, 
+body:not(.dark) textarea {
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+    border-color: rgba(203, 213, 225, 0.8) !important;
+}
+
+body:not(.dark) select option {
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+}
+
+body:not(.dark) .bg-white\/5, 
+body:not(.dark) .bg-white\/10 {
+    background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+body:not(.dark) .border-white\/5, 
+body:not(.dark) .border-white\/10, 
+body:not(.dark) .border-white\/15 {
+    border-color: rgba(203, 213, 225, 0.6) !important;
+}
+
 
 

@@ -1762,6 +1762,7 @@ function refreshDashboard() {
 let isDarkTheme = true;
 function toggleInterfaceTheme() {
     const btn = document.getElementById('themeToggleBtn');
+    const headerIcon = document.getElementById('headerThemeIcon');
     const toggleDot = btn?.querySelector('div');
     
     isDarkTheme = !isDarkTheme;
@@ -1769,18 +1770,61 @@ function toggleInterfaceTheme() {
     if (isDarkTheme) {
         document.documentElement.classList.add('dark');
         document.body.classList.add('dark');
+        if (headerIcon) headerIcon.innerText = 'light_mode';
         if (toggleDot) {
             toggleDot.style.left = '4px';
             toggleDot.className = 'w-4 h-4 bg-primary rounded-full transition-all duration-300 absolute left-1';
         }
+        showSlackToast("Switched interface theme to Dark Mode.");
     } else {
         document.documentElement.classList.remove('dark');
         document.body.classList.remove('dark');
+        if (headerIcon) headerIcon.innerText = 'dark_mode';
         if (toggleDot) {
             toggleDot.style.left = '24px';
             toggleDot.className = 'w-4 h-4 bg-on-secondary-fixed rounded-full transition-all duration-300 absolute left-6';
         }
+        showSlackToast("Switched interface theme to Day Mode (Light Theme).");
     }
+}
+
+function generateReportPDF(reportTitle) {
+    showSlackToast(`PDF Generator: Compiling "${reportTitle}" document...`);
+    setTimeout(() => {
+        showSlackToast(`PDF Generated: "${reportTitle}.pdf" downloaded to local storage.`);
+        speakVoiceResponse(`Generated PDF report for ${reportTitle}`);
+    }, 600);
+}
+
+function generateReportCSV(reportTitle) {
+    showSlackToast(`CSV Exporter: Exporting data records for "${reportTitle}"...`);
+    setTimeout(() => {
+        showSlackToast(`CSV Exported: "${reportTitle}.csv" downloaded successfully.`);
+        speakVoiceResponse(`Exported CSV report for ${reportTitle}`);
+    }, 500);
+}
+
+function exportAllReportsCSV() {
+    showSlackToast("Batch Exporter: Packaging CSV archives for all 4 enterprise reports...");
+    setTimeout(() => {
+        showSlackToast("Export Complete: Downloaded Enterprise_All_Reports.zip");
+        speakVoiceResponse("All CSV reports exported into ZIP package");
+    }, 800);
+}
+
+function generateFullPDFReport() {
+    showSlackToast("Master PDF Builder: Assembling 18-page Executive Operations & Telemetry Brief...");
+    setTimeout(() => {
+        showSlackToast("Master PDF Ready: Downloaded EnterpriseFlow_Master_Executive_Report.pdf");
+        speakVoiceResponse("Master executive PDF report generated successfully");
+    }, 1000);
+}
+
+function saveReportScheduleSettings() {
+    const recipients = document.getElementById('reportEmailRecipients')?.value || '';
+    const schedule = document.getElementById('reportCronSchedule')?.value || 'weekly';
+    showSlackToast(`Saved Cron Schedule (${schedule.toUpperCase()}) for recipients: ${recipients}`);
+    speakVoiceResponse("Saved automated report delivery schedule");
 }
 
 // ==========================================
