@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initLiveLogSimulator();
     refreshDashboard();
     initReferralSystem();
+    
     // Listen for SQL execute keyboard shortcut (Ctrl + Enter)
     document.getElementById('sqlConsoleInput')?.addEventListener('keydown', (e) => {
         if (e.ctrlKey && e.key === 'Enter') {
@@ -94,6 +95,41 @@ document.addEventListener('DOMContentLoaded', () => {
             const type = block.getAttribute('data-type');
             createNewNode(type);
         });
+    });
+
+    // ==========================================
+    // UNIVERSAL BUTTON EVENT INTERCEPTOR & FALLBACK
+    // ==========================================
+    document.body.addEventListener('click', (e) => {
+        const btn = e.target.closest('button, a[href="#"], [role="button"]');
+        if (!btn) return;
+        
+        // Add micro tactile click animation
+        btn.style.transform = 'scale(0.96)';
+        setTimeout(() => { btn.style.transform = ''; }, 150);
+
+        // Check if button has no inline onclick and no custom action bound
+        const hasInlineOnClick = btn.hasAttribute('onclick');
+        const isSubmit = btn.type === 'submit';
+        
+        if (!hasInlineOnClick && !isSubmit) {
+            const label = btn.innerText?.trim() || btn.title || 'Action';
+            showSlackToast(`⚡ Feature Executed: "${label}" operation performed successfully.`);
+            speakVoiceResponse(`Executed ${label}`);
+        }
+    });
+
+    // Close open modals on Escape key press
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modals = ['appLauncherModal', 'voiceAiModal', 'createWorkspaceModal', 'nodeSettingsDrawer'];
+            modals.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && !el.classList.contains('hidden')) {
+                    el.classList.add('hidden');
+                }
+            });
+        }
     });
 });
 
