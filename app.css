@@ -794,16 +794,27 @@ select option:hover, select option:focus, select option:checked {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     }
     
-    /* Touch target sizes */
+    /* Touch target sizes & input auto-zoom prevention */
     button, a, input, select, textarea {
-        min-height: 40px;
+        min-height: 44px;
+        touch-action: manipulation;
     }
     
+    input, select, textarea {
+        font-size: 16px !important; /* Prevents auto-zoom on mobile iOS/Android */
+    }
+
     /* Touch scroll optimization */
-    .touch-scroll-x {
+    .touch-scroll-x, .overflow-x-auto {
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch !important;
-        touch-action: pan-x !important;
+        touch-action: pan-x pan-y !important;
+    }
+
+    /* Mobile modal pop bounds */
+    #voiceAiModal > div, #appLauncherModal > div, #createWorkspaceModal > div {
+        margin: 16px !important;
+        max-width: calc(100vw - 32px) !important;
     }
 }
 
