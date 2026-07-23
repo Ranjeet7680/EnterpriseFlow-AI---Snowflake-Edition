@@ -833,7 +833,7 @@
                 </div>
                 <div class="h-4 w-px bg-white/10 hidden sm:block"></div>
                 <nav class="hidden md:flex items-center gap-6">
-                    <a href="#" class="text-sm text-on-surface hover:text-primary transition-colors font-medium">Workspaces</a>
+                    <a href="#" class="text-sm text-on-surface hover:text-primary transition-colors font-medium" onclick="switchTab('workspaces')">Workspaces</a>
                     <a href="#" class="text-sm text-on-surface-variant hover:text-primary transition-colors font-medium" onclick="switchTab('settings')">Settings</a>
                 </nav>
             </div>
@@ -1571,6 +1571,262 @@
                                 <!-- Populated dynamically by app.js simulator -->
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================== -->
+            <!-- VIEW: WORKSPACES & CLUSTER MANAGEMENT -->
+            <!-- ========================================== -->
+            <section id="view-workspaces" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 view-container hidden-view">
+                <!-- Header Banner -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
+                    <div class="flex items-center gap-3">
+                        <div class="p-3 bg-primary/10 border border-primary/30 rounded-2xl text-primary shadow-[0_0_15px_rgba(0,229,195,0.2)]">
+                            <span class="material-symbols-outlined text-2xl">grid_view</span>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                                Snowflake Workspaces & Clusters
+                                <span class="text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 font-mono">4 ACTIVE CLUSTERS</span>
+                            </h1>
+                            <p class="text-xs text-on-surface-variant mt-0.5">Manage data environments, compute warehouse tiers, and Cortex AI credit allocations.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button class="bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 active:scale-95" onclick="refreshWorkspacesState()">
+                            <span class="material-symbols-outlined text-[16px]">refresh</span>
+                            <span>Refresh Telemetry</span>
+                        </button>
+                        <button class="bg-gradient-to-r from-secondary to-primary text-on-secondary font-bold text-xs px-4 py-2.5 rounded-xl shadow-lg hover:brightness-110 transition-all flex items-center gap-2 active:scale-95 btn-shine" onclick="openCreateWorkspaceModal()">
+                            <span class="material-symbols-outlined text-[16px]">add_circle</span>
+                            <span>Provision New Cluster</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Metric Summary Bar -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="glass-card-interactive p-4 rounded-2xl bg-surface-container/60 border border-white/10 space-y-1">
+                        <div class="flex items-center justify-between text-on-surface-variant">
+                            <span class="text-[10px] uppercase font-bold tracking-wider">Total Compute Warehouses</span>
+                            <span class="material-symbols-outlined text-primary text-lg">dns</span>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-white">4 Clusters</h3>
+                        <p class="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">check_circle</span> 100% Operational
+                        </p>
+                    </div>
+                    <div class="glass-card-interactive p-4 rounded-2xl bg-surface-container/60 border border-white/10 space-y-1">
+                        <div class="flex items-center justify-between text-on-surface-variant">
+                            <span class="text-[10px] uppercase font-bold tracking-wider">Credits Burned (24h)</span>
+                            <span class="material-symbols-outlined text-secondary text-lg">bolt</span>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-white">142.8 Credits</h3>
+                        <p class="text-[10px] text-primary font-semibold flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">trending_down</span> -18% vs yesterday (Optimized)
+                        </p>
+                    </div>
+                    <div class="glass-card-interactive p-4 rounded-2xl bg-surface-container/60 border border-white/10 space-y-1">
+                        <div class="flex items-center justify-between text-on-surface-variant">
+                            <span class="text-[10px] uppercase font-bold tracking-wider">Storage Capacity</span>
+                            <span class="material-symbols-outlined text-amber-400 text-lg">database</span>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-white">18.4 TB</h3>
+                        <p class="text-[10px] text-on-surface-variant">Zero-copy partitions enabled</p>
+                    </div>
+                    <div class="glass-card-interactive p-4 rounded-2xl bg-surface-container/60 border border-white/10 space-y-1">
+                        <div class="flex items-center justify-between text-on-surface-variant">
+                            <span class="text-[10px] uppercase font-bold tracking-wider">Cortex AI Agent Mesh</span>
+                            <span class="material-symbols-outlined text-purple-400 text-lg">psychology</span>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-white">12 Agents</h3>
+                        <p class="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">verified</span> Active SLA 99.9%
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Environment Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- PROD ENVIRONMENT -->
+                    <div class="glass-card-interactive rounded-2xl p-5 bg-surface-container/80 border border-primary/40 space-y-4 relative overflow-hidden group">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-9 h-9 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary font-bold text-xs">
+                                    PR
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-white text-sm">PROD_WAREHOUSE_X2</h4>
+                                    <p class="text-[9px] font-mono text-on-surface-variant">ID: ws-prod-8842</p>
+                                </div>
+                            </div>
+                            <span class="bg-emerald-500/20 text-emerald-400 text-[9px] font-bold font-mono px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> ONLINE
+                            </span>
+                        </div>
+                        <div class="space-y-2 text-xs border-t border-b border-white/10 py-3 my-2">
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Cluster Size</span>
+                                <span class="text-white font-semibold font-mono">X2 (8 Nodes)</span>
+                            </div>
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Active Schema</span>
+                                <span class="text-primary font-mono font-semibold">ANALYTICS_PROD</span>
+                            </div>
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Auto-Suspend</span>
+                                <span class="text-white font-mono">10 min</span>
+                            </div>
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Query Rate</span>
+                                <span class="text-white font-mono">4,280 / hr</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-1">
+                            <span class="text-[10px] text-primary font-mono font-bold">64.2 Credits/day</span>
+                            <button class="bg-primary/20 hover:bg-primary text-primary hover:text-on-secondary font-bold text-[10px] px-3 py-1.5 rounded-lg transition-all" onclick="selectEnvironment('prod')">Switch Active</button>
+                        </div>
+                    </div>
+
+                    <!-- STAGING ENVIRONMENT -->
+                    <div class="glass-card-interactive rounded-2xl p-5 bg-surface-container/80 border border-white/15 space-y-4 relative overflow-hidden group">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-9 h-9 rounded-xl bg-secondary/10 border border-secondary/30 flex items-center justify-center text-secondary font-bold text-xs">
+                                    ST
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-white text-sm">STAGING_WH_X1</h4>
+                                    <p class="text-[9px] font-mono text-on-surface-variant">ID: ws-stg-4410</p>
+                                </div>
+                            </div>
+                            <span class="bg-blue-500/20 text-blue-400 text-[9px] font-bold font-mono px-2 py-0.5 rounded-full border border-blue-500/30 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> READY
+                            </span>
+                        </div>
+                        <div class="space-y-2 text-xs border-t border-b border-white/10 py-3 my-2">
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Cluster Size</span>
+                                <span class="text-white font-semibold font-mono">X1 (2 Nodes)</span>
+                            </div>
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Active Schema</span>
+                                <span class="text-secondary font-mono font-semibold">LEADS_STAGING</span>
+                            </div>
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Auto-Suspend</span>
+                                <span class="text-white font-mono">5 min</span>
+                            </div>
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Query Rate</span>
+                                <span class="text-white font-mono">850 / hr</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-1">
+                            <span class="text-[10px] text-secondary font-mono font-bold">18.5 Credits/day</span>
+                            <button class="bg-white/10 hover:bg-white/20 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition-all" onclick="selectEnvironment('staging')">Switch Active</button>
+                        </div>
+                    </div>
+
+                    <!-- ML SANDBOX ENVIRONMENT -->
+                    <div class="glass-card-interactive rounded-2xl p-5 bg-surface-container/80 border border-white/15 space-y-4 relative overflow-hidden group">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 font-bold text-xs">
+                                    ML
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-white text-sm">CORTEX_ML_WH</h4>
+                                    <p class="text-[9px] font-mono text-on-surface-variant">ID: ws-cortex-992</p>
+                                </div>
+                            </div>
+                            <span class="bg-purple-500/20 text-purple-400 text-[9px] font-bold font-mono px-2 py-0.5 rounded-full border border-purple-500/30 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span> GPU ACCEL
+                            </span>
+                        </div>
+                        <div class="space-y-2 text-xs border-t border-b border-white/10 py-3 my-2">
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Cluster Size</span>
+                                <span class="text-white font-semibold font-mono">Medium (4 GPU Nodes)</span>
+                            </div>
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Active Schema</span>
+                                <span class="text-purple-400 font-mono font-semibold">CORTEX_SEARCH</span>
+                            </div>
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Auto-Suspend</span>
+                                <span class="text-white font-mono">15 min</span>
+                            </div>
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Query Rate</span>
+                                <span class="text-white font-mono">1,420 / hr</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-1">
+                            <span class="text-[10px] text-purple-400 font-mono font-bold">42.0 Credits/day</span>
+                            <button class="bg-white/10 hover:bg-white/20 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition-all" onclick="selectEnvironment('ml')">Switch Active</button>
+                        </div>
+                    </div>
+
+                    <!-- DEV SANDBOX ENVIRONMENT -->
+                    <div class="glass-card-interactive rounded-2xl p-5 bg-surface-container/80 border border-white/15 space-y-4 relative overflow-hidden group">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold text-xs">
+                                    DV
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-white text-sm">DEV_SANDBOX_WH</h4>
+                                    <p class="text-[9px] font-mono text-on-surface-variant">ID: ws-dev-1002</p>
+                                </div>
+                            </div>
+                            <span class="bg-amber-500/20 text-amber-400 text-[9px] font-bold font-mono px-2 py-0.5 rounded-full border border-amber-500/30">
+                                SANDBOX
+                            </span>
+                        </div>
+                        <div class="space-y-2 text-xs border-t border-b border-white/10 py-3 my-2">
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Cluster Size</span>
+                                <span class="text-white font-semibold font-mono">X-Small (1 Node)</span>
+                            </div>
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Active Schema</span>
+                                <span class="text-amber-400 font-mono font-semibold">DEV_TEST</span>
+                            </div>
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Auto-Suspend</span>
+                                <span class="text-white font-mono">3 min</span>
+                            </div>
+                            <div class="flex justify-between text-on-surface-variant">
+                                <span>Query Rate</span>
+                                <span class="text-white font-mono">120 / hr</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-1">
+                            <span class="text-[10px] text-amber-400 font-mono font-bold">5.2 Credits/day</span>
+                            <button class="bg-white/10 hover:bg-white/20 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition-all" onclick="selectEnvironment('dev')">Switch Active</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database Schemas & Connection Parameters Panel -->
+                <div class="glass-panel-heavy rounded-2xl p-6 border border-white/10 space-y-4">
+                    <div class="flex justify-between items-center border-b border-white/10 pb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-primary text-xl">key</span>
+                            <div>
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Active Workspace Connection String</h3>
+                                <p class="text-[10px] text-on-surface-variant">Secure driver configuration for Python SDK, Node.js, and JDBC Snowflake connectors</p>
+                            </div>
+                        </div>
+                        <button class="bg-primary/20 text-primary hover:bg-primary hover:text-on-secondary border border-primary/30 font-bold text-xs px-3.5 py-1.5 rounded-xl transition-all active:scale-95 flex items-center gap-1.5" onclick="copyWorkspaceConnString()">
+                            <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                            <span>Copy Connection String</span>
+                        </button>
+                    </div>
+                    <div class="p-4 bg-slate-950/90 border border-white/10 rounded-xl font-mono text-xs text-primary overflow-x-auto custom-scrollbar">
+                        <code>snowflake://ADMIN_CORTEX:****************@snak-hack.snowflakecomputing.com:443/PROD_DB/ANALYTICS_PROD?warehouse=PROD_WAREHOUSE_X2&role=ACCOUNTADMIN&authenticator=oauth</code>
                     </div>
                 </div>
             </section>
@@ -5188,6 +5444,69 @@
     <!-- Toast Notification Container (Slack-style alerts) -->
     <div id="toastContainer" class="fixed top-20 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
         <!-- Dispatched dynamically by app.js -->
+    </div>
+
+    <!-- ========================================== -->
+    <!-- ADVANCED VOICE AI HELPER HUD OVERLAY MODAL -->
+    <!-- ========================================== -->
+    <div id="voiceAiModal" class="fixed inset-0 z-[12000] bg-black/75 backdrop-blur-md flex items-center justify-center hidden transition-all duration-300 select-none">
+        <div class="glass-panel-heavy rounded-3xl w-full max-w-lg p-6 border border-primary/40 shadow-2xl space-y-6 modal-pop-anim relative bg-slate-950/95 text-center">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-primary/20 border border-primary/40 flex items-center justify-center text-primary animate-pulse">
+                        <span class="material-symbols-outlined text-[22px]">graphic_eq</span>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+                            Cortex Voice AI Agent HUD
+                            <span class="bg-primary/20 text-primary text-[9px] font-mono px-2 py-0.5 rounded-full font-bold">V2.4 REALTIME</span>
+                        </h3>
+                        <p class="text-[10px] text-on-surface-variant">Speech Recognition & Automated Cortex Operations</p>
+                    </div>
+                </div>
+                <button class="text-on-surface-variant hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors" onclick="toggleVoiceAI()">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+
+            <!-- Central Animated Canvas Neural Voice Orb -->
+            <div class="flex flex-col items-center justify-center py-4 relative">
+                <div class="w-36 h-36 relative flex items-center justify-center">
+                    <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/30 to-secondary/30 blur-2xl animate-pulse"></div>
+                    <canvas id="voiceOrbCanvas" class="w-full h-full relative z-10 block"></canvas>
+                </div>
+                <div id="voiceAiHudStatus" class="mt-4 font-mono text-xs text-primary font-bold tracking-wider flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                    <span>LISTENING FOR VOICE COMMANDS...</span>
+                </div>
+                <p id="voiceAiTranscript" class="mt-2 text-xs text-white bg-white/5 border border-white/10 rounded-xl px-4 py-2 font-code-sm max-w-sm italic">
+                    "Say commands like 'Show Workspaces', 'Run Simulation', 'Show Anomalies'..."
+                </p>
+            </div>
+
+            <!-- Quick Action Command Chips -->
+            <div class="space-y-2 text-left border-t border-white/10 pt-4">
+                <span class="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant block mb-1">Quick Voice Command Actions</span>
+                <div class="flex flex-wrap gap-2">
+                    <button class="bg-white/5 hover:bg-primary/20 text-on-surface hover:text-primary border border-white/10 hover:border-primary/40 px-3 py-1.5 rounded-xl text-xs transition-all flex items-center gap-1.5 active:scale-95" onclick="processVoiceCommand('show workspaces')">
+                        <span>🎙️ "Show Workspaces"</span>
+                    </button>
+                    <button class="bg-white/5 hover:bg-primary/20 text-on-surface hover:text-primary border border-white/10 hover:border-primary/40 px-3 py-1.5 rounded-xl text-xs transition-all flex items-center gap-1.5 active:scale-95" onclick="processVoiceCommand('run simulation')">
+                        <span>🎙️ "Run Simulation"</span>
+                    </button>
+                    <button class="bg-white/5 hover:bg-primary/20 text-on-surface hover:text-primary border border-white/10 hover:border-primary/40 px-3 py-1.5 rounded-xl text-xs transition-all flex items-center gap-1.5 active:scale-95" onclick="processVoiceCommand('show anomalies')">
+                        <span>🎙️ "Show Anomalies"</span>
+                    </button>
+                    <button class="bg-white/5 hover:bg-primary/20 text-on-surface hover:text-primary border border-white/10 hover:border-primary/40 px-3 py-1.5 rounded-xl text-xs transition-all flex items-center gap-1.5 active:scale-95" onclick="processVoiceCommand('cortex copilot')">
+                        <span>🎙️ "Cortex Copilot"</span>
+                    </button>
+                    <button class="bg-white/5 hover:bg-primary/20 text-on-surface hover:text-primary border border-white/10 hover:border-primary/40 px-3 py-1.5 rounded-xl text-xs transition-all flex items-center gap-1.5 active:scale-95" onclick="processVoiceCommand('open support')">
+                        <span>🎙️ "Open Support"</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Script imports -->

@@ -610,6 +610,21 @@ main, footer {
     filter: drop-shadow(0 0 12px rgba(0, 229, 195, 0.6));
 }
 
+/* Fix Select Dropdown Option Contrast in Dark Mode */
+select {
+    background-color: #101415 !important;
+    color: #e0e3e5 !important;
+}
+select option {
+    background-color: #0b0f10 !important;
+    color: #ffffff !important;
+    padding: 10px 14px;
+}
+select option:hover, select option:focus, select option:checked {
+    background-color: #00e5c3 !important;
+    color: #002e69 !important;
+}
+
 /* ==========================================
    MOBILE DESIGN SYSTEM & RESPONSIVE LAYOUTS
    ========================================== */

@@ -1788,21 +1788,88 @@ function toggleInterfaceTheme() {
 // 10. VOICE AI MIC WAVE VISUALIZER & WEB SPEECH ENGINE
 // ==========================================
 let speechRecognitionInstance = null;
+let voiceOrbAnimationId = null;
+
+function animateVoiceOrbCanvas() {
+    const canvas = document.getElementById('voiceOrbCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    canvas.width = 150;
+    canvas.height = 150;
+    let step = 0;
+    
+    function renderOrb() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        step += 0.05;
+        
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const baseRadius = 45 + Math.sin(step * 2) * 8;
+        
+        // Outer pulsing ring
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, baseRadius + 12 + Math.sin(step * 3) * 6, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0, 229, 195, 0.25)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Dynamic wave ring
+        ctx.beginPath();
+        for (let i = 0; i <= 360; i += 5) {
+            const rad = (i * Math.PI) / 180;
+            const dist = baseRadius + Math.sin(rad * 6 + step * 4) * 6;
+            const x = centerX + Math.cos(rad) * dist;
+            const y = centerY + Math.sin(rad) * dist;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        grad.addColorStop(0, '#00e5c3');
+        grad.addColorStop(1, '#026de7');
+        ctx.fillStyle = grad;
+        ctx.globalAlpha = 0.85;
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        
+        // Core glow dot
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 16 + Math.sin(step * 4) * 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#00e5c3';
+        ctx.shadowBlur = 15;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        
+        if (isVoiceActive) {
+            voiceOrbAnimationId = requestAnimationFrame(renderOrb);
+        }
+    }
+    
+    renderOrb();
+}
 
 function toggleVoiceAI() {
     isVoiceActive = !isVoiceActive;
     
     const btn = document.getElementById('voiceAiBtn');
     const wave = document.getElementById('voiceWaveform');
+    const modal = document.getElementById('voiceAiModal');
     const label = btn?.querySelector('span:nth-child(2)');
+    const hudStatus = document.getElementById('voiceAiHudStatus');
+    const transcriptEl = document.getElementById('voiceAiTranscript');
     
     if (isVoiceActive) {
+        if (modal) modal.classList.remove('hidden');
         btn?.classList.add('text-primary');
         btn?.classList.remove('text-secondary');
         wave?.classList.remove('hidden');
         wave?.classList.add('flex');
         if (label) label.innerText = 'Voice AI Listening...';
         
+        animateVoiceOrbCanvas();
         animateVoiceBars();
         
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1810,19 +1877,35 @@ function toggleVoiceAI() {
             try {
                 speechRecognitionInstance = new SpeechRecognition();
                 speechRecognitionInstance.continuous = false;
-                speechRecognitionInstance.interimResults = false;
+                speechRecognitionInstance.interimResults = true;
                 speechRecognitionInstance.lang = 'en-US';
                 
                 speechRecognitionInstance.onresult = (event) => {
-                    const transcript = event.results[0][0].transcript;
-                    showSlackToast(`Voice Command Recognized: "${transcript}"`);
-                    speakVoiceResponse(`Recognized command: ${transcript}`);
-                    processVoiceCommand(transcript);
-                    if (isVoiceActive) toggleVoiceAI();
+                    let interim = '';
+                    let finalStr = '';
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalStr += event.results[i][0].transcript;
+                        } else {
+                            interim += event.results[i][0].transcript;
+                        }
+                    }
+                    const text = finalStr || interim;
+                    if (transcriptEl) transcriptEl.innerText = `"${text}"`;
+                    
+                    if (finalStr) {
+                        showSlackToast(`Voice Command Recognized: "${finalStr}"`);
+                        speakVoiceResponse(`Executing voice action: ${finalStr}`);
+                        processVoiceCommand(finalStr);
+                        setTimeout(() => {
+                            if (isVoiceActive) toggleVoiceAI();
+                        }, 1200);
+                    }
                 };
                 
                 speechRecognitionInstance.onerror = (err) => {
                     console.log('Speech recognition event:', err);
+                    if (hudStatus) hudStatus.innerText = 'VOICE READY - CLICK COMMAND CHIP BELOW';
                 };
                 
                 speechRecognitionInstance.start();
@@ -1830,10 +1913,11 @@ function toggleVoiceAI() {
                 console.log('Speech recognition init error:', e);
             }
         } else {
-            showSlackToast("Voice AI active! Speak commands like 'run simulation' or 'open sql'.");
-            speakVoiceResponse("Voice AI active. How can I assist you with Snowflake operations today?");
+            showSlackToast("Voice AI HUD Active! Tap a quick command chip below.");
+            speakVoiceResponse("Voice AI assistant active. How can I assist with Snowflake operations?");
         }
     } else {
+        if (modal) modal.classList.add('hidden');
         btn?.classList.remove('text-primary');
         btn?.classList.add('text-secondary');
         wave?.classList.add('hidden');
@@ -1849,40 +1933,59 @@ function toggleVoiceAI() {
             cancelAnimationFrame(voiceAnimationId);
             voiceAnimationId = null;
         }
+        if (voiceOrbAnimationId) {
+            cancelAnimationFrame(voiceOrbAnimationId);
+            voiceOrbAnimationId = null;
+        }
     }
 }
 
 function processVoiceCommand(cmd) {
     const text = cmd.toLowerCase();
-    if (text.includes('run') || text.includes('start') || text.includes('simulation') || text.includes('pipeline')) {
+    const transcriptEl = document.getElementById('voiceAiTranscript');
+    if (transcriptEl) transcriptEl.innerText = `"${cmd}"`;
+
+    if (text.includes('workspace') || text.includes('workspaces') || text.includes('cluster') || text.includes('environment')) {
+        switchTab('workspaces');
+        speakVoiceResponse("Opening Snowflake Workspaces and Cluster Management page");
+        showSlackToast("Voice Action: Opened Workspaces Management");
+    } else if (text.includes('run') || text.includes('start') || text.includes('simulation') || text.includes('pipeline')) {
         switchTab('workflows');
         setTimeout(() => startEndToEndSimulation(), 500);
         speakVoiceResponse("Starting end to end pipeline simulation");
+        showSlackToast("Voice Action: Triggered Pipeline Simulation");
+    } else if (text.includes('anomaly') || text.includes('anomalies') || text.includes('telemetry') || text.includes('alert')) {
+        switchTab('anomalies');
+        speakVoiceResponse("Opening Cortex Anomaly Detection Engine");
+        showSlackToast("Voice Action: Opened Anomaly Engine");
+    } else if (text.includes('support') || text.includes('ticket') || text.includes('helpdesk') || text.includes('help')) {
+        switchTab('support');
+        speakVoiceResponse("Opening Enterprise Support and Helpdesk");
+        showSlackToast("Voice Action: Opened Support & Helpdesk");
     } else if (text.includes('sql') || text.includes('query') || text.includes('snowflake') || text.includes('console')) {
-        switchTab('snowflake-explorer');
-        speakVoiceResponse("Opening Snowflake Console");
-    } else if (text.includes('chat') || text.includes('ask') || text.includes('cortex') || text.includes('ai')) {
-        switchTab('cortex-chat');
-        const input = document.getElementById('aiChatInput');
-        if (input) {
-            input.value = cmd;
-            sendChatMessage();
-        }
-        speakVoiceResponse("Sending your query to Cortex AI Chat Assistant");
+        switchTab('query-studio');
+        speakVoiceResponse("Opening Snowflake SQL Query Studio");
+        showSlackToast("Voice Action: Opened Snowflake SQL Studio");
+    } else if (text.includes('chat') || text.includes('ask') || text.includes('cortex') || text.includes('ai') || text.includes('copilot')) {
+        switchTab('ai-agent');
+        speakVoiceResponse("Opening Cortex AI Chat Studio");
+        showSlackToast("Voice Action: Opened Cortex Copilot");
     } else if (text.includes('dashboard') || text.includes('overview') || text.includes('metrics')) {
         switchTab('dashboard');
-        speakVoiceResponse("Switching to Operations Control Room");
-    } else if (text.includes('optimize') || text.includes('align')) {
-        switchTab('workflows');
-        autoOptimizeNodes();
-        speakVoiceResponse("Optimizing visual workflow nodes");
+        speakVoiceResponse("Switching to Operations Control Room Overview");
+        showSlackToast("Voice Action: Opened Command Center");
+    } else if (text.includes('cli') || text.includes('terminal') || text.includes('command line')) {
+        switchTab('cortex-cli');
+        speakVoiceResponse("Opening Cortex Code CLI Studio");
+        showSlackToast("Voice Action: Opened Cortex Code CLI");
     } else {
-        switchTab('cortex-chat');
+        switchTab('ai-agent');
         const input = document.getElementById('aiChatInput');
         if (input) {
             input.value = cmd;
             sendChatMessage();
         }
+        speakVoiceResponse(`Sending "${cmd}" to Cortex AI Assistant`);
     }
 }
 
@@ -1896,6 +1999,28 @@ function speakVoiceResponse(message) {
             window.speechSynthesis.speak(utterance);
         } catch(e) {}
     }
+}
+
+function openCreateWorkspaceModal() {
+    showSlackToast("Provisioning Wizard: Connecting to Snowflake AccountAdmin endpoint to spin up new warehouse cluster...");
+    setTimeout(() => {
+        const name = prompt("Enter New Snowflake Warehouse Name:", "ANALYTICS_WH_X3");
+        if (name) {
+            showSlackToast(`Successfully provisioned cluster "${name}"! (Active state: ONLINE)`);
+            speakVoiceResponse(`Warehouse cluster ${name} provisioned successfully`);
+        }
+    }, 300);
+}
+
+function copyWorkspaceConnString() {
+    const connStr = "snowflake://ADMIN_CORTEX:****************@snak-hack.snowflakecomputing.com:443/PROD_DB/ANALYTICS_PROD?warehouse=PROD_WAREHOUSE_X2&role=ACCOUNTADMIN";
+    navigator.clipboard.writeText(connStr);
+    showSlackToast("Copied Snowflake workspace connection string to clipboard!");
+    speakVoiceResponse("Workspace connection string copied to clipboard");
+}
+
+function refreshWorkspacesState() {
+    showSlackToast("Refreshed real-time telemetry metrics for all 4 Snowflake clusters.");
 }
 
 function animateVoiceBars() {
