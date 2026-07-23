@@ -2779,22 +2779,63 @@ function submitAuthLogin() {
 let selectedEnv = 'dev';
 function selectEnvironment(env) {
     selectedEnv = env;
-    const envs = ['dev', 'stage', 'prod'];
+    const envNames = {
+        'dev': 'DEV_SANDBOX_WH',
+        'stage': 'STAGING_WH_X1',
+        'staging': 'STAGING_WH_X1',
+        'prod': 'PROD_WAREHOUSE_X2',
+        'ml': 'CORTEX_ML_WH'
+    };
+    
+    const envs = ['dev', 'stage', 'staging', 'prod', 'ml'];
     envs.forEach(e => {
         const card = document.getElementById(`env-${e}`);
         const dot = document.getElementById(`envDot-${e}`);
-        if (card && dot) {
+        if (card) {
             if (e === env) {
-                card.classList.add('border-primary/30', 'bg-white/10');
-                card.classList.remove('border-white/5');
-                dot.className = 'w-2.5 h-2.5 rounded-full bg-primary';
+                card.classList.add('border-primary', 'bg-primary/10', 'shadow-[0_0_20px_rgba(0,229,195,0.35)]');
+                card.classList.remove('border-white/5', 'border-white/10', 'border-white/15');
+                if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-primary animate-ping';
             } else {
-                card.classList.remove('border-primary/30', 'bg-white/10');
-                card.classList.add('border-white/5');
-                dot.className = 'w-2.5 h-2.5 rounded-full bg-white/10';
+                card.classList.remove('border-primary', 'bg-primary/10', 'shadow-[0_0_20px_rgba(0,229,195,0.35)]');
+                card.classList.add('border-white/10');
+                if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-white/20';
             }
         }
     });
+    
+    const fullEnvName = envNames[env] || env.toUpperCase();
+    showSlackToast(`✅ Active Snowflake Environment set to ${fullEnvName}!`);
+    speakVoiceResponse(`Environment switched to ${fullEnvName}`);
+    
+    const badge = document.getElementById('warehouseStatusBadge');
+    if (badge) badge.innerText = `${fullEnvName}: ONLINE (ACCOUNTADMIN)`;
+}
+
+function openDeployAgentModal() {
+    const modal = document.getElementById('deployAgentModal');
+    if (modal) modal.classList.remove('hidden');
+    showSlackToast("Opening AI Employee Deployment Wizard...");
+}
+
+function closeDeployAgentModal() {
+    const modal = document.getElementById('deployAgentModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function deployAiEmployeeSubmit() {
+    const role = document.getElementById('deployAgentRoleSelect')?.value || 'Data Engineering Specialist';
+    const env = document.getElementById('deployAgentTargetEnvSelect')?.value || 'PROD_WAREHOUSE_X2';
+    const autonomy = document.getElementById('deployAgentAutonomySelect')?.value || 'Human Approval Gate Required';
+    
+    showSlackToast(`🚀 Deploying "${role}" to ${env}... Connecting Cortex neural weights.`);
+    speakVoiceResponse(`Deploying ${role} to ${env}`);
+    
+    setTimeout(() => {
+        closeDeployAgentModal();
+        showSlackToast(`✅ AI Employee "${role}" successfully deployed on ${env}! (Autonomy: ${autonomy})`);
+        speakVoiceResponse(`AI Employee ${role} is now live and operational on ${env}`);
+    }, 1200);
 }
 
 function launchWorkspaceEnv() {

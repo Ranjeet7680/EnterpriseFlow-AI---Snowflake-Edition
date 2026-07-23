@@ -1608,7 +1608,11 @@
                             <p class="text-xs text-on-surface-variant mt-0.5">Manage data environments, compute warehouse tiers, and Cortex AI credit allocations.</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <button class="bg-primary/20 text-primary border border-primary/30 font-bold text-xs px-4 py-2.5 rounded-xl hover:bg-primary hover:text-on-secondary transition-all flex items-center gap-2 active:scale-95 shadow-[0_0_15px_rgba(0,229,195,0.2)]" onclick="openDeployAgentModal()">
+                            <span class="material-symbols-outlined text-[18px]">smart_toy</span>
+                            <span>Deploy AI Employee</span>
+                        </button>
                         <button class="bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 active:scale-95" onclick="refreshWorkspacesState()">
                             <span class="material-symbols-outlined text-[16px]">refresh</span>
                             <span>Refresh Telemetry</span>
@@ -5678,6 +5682,88 @@
                         <span>🎙️ "Open Support"</span>
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- DEPLOY AUTONOMOUS AI EMPLOYEE / AGENT MODAL -->
+    <!-- ========================================== -->
+    <div id="deployAgentModal" class="fixed inset-0 z-[12000] bg-black/75 backdrop-blur-md flex items-center justify-center hidden transition-all duration-300 select-none p-4">
+        <div class="glass-panel-heavy rounded-3xl w-full max-w-lg p-6 border border-primary/40 shadow-2xl space-y-5 modal-pop-anim relative bg-slate-950/95">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-primary/20 border border-primary/40 flex items-center justify-center text-primary animate-pulse">
+                        <span class="material-symbols-outlined text-[24px]">smart_toy</span>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+                            Deploy Autonomous AI Employee
+                            <span class="bg-primary/20 text-primary text-[9px] font-mono px-2 py-0.5 rounded-full font-bold">CORTEX AGENT</span>
+                        </h3>
+                        <p class="text-[10px] text-on-surface-variant">Spin up an autonomous AI workforce agent on Snowflake warehouse clusters</p>
+                    </div>
+                </div>
+                <button class="text-on-surface-variant hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors" onclick="closeDeployAgentModal()">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+
+            <!-- Agent Role & Specs Form -->
+            <div class="space-y-4 text-xs">
+                <div>
+                    <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">1. Select AI Employee Role & Persona</label>
+                    <select id="deployAgentRoleSelect" class="w-full bg-surface border border-white/10 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-primary">
+                        <option value="Data Engineering Specialist">🤖 Data Engineering Specialist (Pipeline ETL & Pruning)</option>
+                        <option value="Snowflake SQL Optimization Agent">⚡ Snowflake SQL Optimization Agent (Query & Index Tuning)</option>
+                        <option value="Cortex Reasoning & Anomaly Sentinel">🧠 Cortex Reasoning Sentinel (24/7 Anomaly Detection)</option>
+                        <option value="Data Quality & SLA Compliance Bot">🛡️ Data Quality Sentinel (Automated Null/Format Auditing)</option>
+                        <option value="Financial Procurement Auditor">💰 Financial Procurement Auditor (Reorder & Expense Gatekeeper)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">2. Target Snowflake Cluster Environment</label>
+                    <select id="deployAgentTargetEnvSelect" class="w-full bg-surface border border-white/10 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-primary">
+                        <option value="PROD_WAREHOUSE_X2">PROD_WAREHOUSE_X2 (Production 8-Node)</option>
+                        <option value="STAGING_WH_X1">STAGING_WH_X1 (Staging 2-Node)</option>
+                        <option value="CORTEX_ML_WH">CORTEX_ML_WH (GPU Machine Learning Cluster)</option>
+                        <option value="DEV_SANDBOX_WH">DEV_SANDBOX_WH (Developer Sandbox)</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">3. Autonomy Level</label>
+                        <select id="deployAgentAutonomySelect" class="w-full bg-surface border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-primary">
+                            <option value="Human Approval Gate Required">Human Gate Approval</option>
+                            <option value="Full Autonomous Execution">Full Autonomous (100%)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">4. LLM Model Engine</label>
+                        <select id="deployAgentModelSelect" class="w-full bg-surface border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-primary">
+                            <option value="Snowflake Cortex mistral-large2">Cortex mistral-large2</option>
+                            <option value="Snowflake Cortex llama3.1-70b">Cortex llama3.1-70b</option>
+                            <option value="Snowflake Cortex arctic">Cortex Arctic Enterprise</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between font-mono text-[10px]">
+                    <span class="text-on-surface-variant">ESTIMATED CREDIT BURN:</span>
+                    <span class="text-primary font-bold">1.2 Credits / hour</span>
+                </div>
+            </div>
+
+            <!-- Actions Footer -->
+            <div class="flex gap-3 pt-2">
+                <button class="flex-1 bg-gradient-to-r from-secondary to-primary text-on-secondary font-bold py-3 rounded-xl text-xs active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2 btn-shine" onclick="deployAiEmployeeSubmit()">
+                    <span class="material-symbols-outlined text-[16px]">rocket_launch</span>
+                    Deploy AI Employee Now
+                </button>
+                <button class="bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold px-4 py-3 rounded-xl text-xs active:scale-[0.98] transition-all" onclick="closeDeployAgentModal()">Cancel</button>
             </div>
         </div>
     </div>
